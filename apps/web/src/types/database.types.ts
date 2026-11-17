@@ -1,6 +1,8 @@
 import type { BadmintonFunctions, BadmintonTables } from './sports/badminton.db';
 import type { CricketFunctions, CricketTables } from './sports/cricket.db';
-import type { VolleyballFunctions, VolleyballTables } from './sports/volleyball.db';
+// volleyball.db.ts (Dev C) currently exports domain types only; no typed tables/RPCs to merge yet.
+type VolleyballTables = Record<never, never>;
+type VolleyballFunctions = Record<never, never>;
 
 export type Json =
   | string
