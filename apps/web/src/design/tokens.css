@@ -27,10 +27,10 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-xl: 16px;
 
   /* Shadows with modern clean depth */
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  --shadow-card: 0 1px 2px 0 rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.8);
   --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(226, 232, 240, 0.8);
   --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(226, 232, 240, 0.8);
 
@@ -42,13 +42,13 @@
   /* 60% Base / Background - Kalikkanundo Dark Pitch Aesthetic */
   --color-bg: #0B1F19;
   --color-text: #F5F7F4;
-  --color-text-muted: #94A3B8;
+  --color-text-muted: #A2B5AA;
 
   /* 30% Secondary / Surfaces - Modern Dark Green Stadium Containers */
-  --color-surface: #132E26;
-  --color-surface-subtle: #1B3D33;
-  --color-secondary: #1B3D33;
-  --color-border: #234E42;
+  --color-surface: #142D25;
+  --color-surface-subtle: #19382E;
+  --color-secondary: #19382E;
+  --color-border: #294237;
 
   /* 10% Accent / Primary Actions - Electric Neon Lime */
   --color-accent: #B7F34B;
@@ -62,7 +62,7 @@
   --color-danger: #EF4444;
   --color-info: #38BDF8;
 
-  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(35, 78, 66, 0.5);
-  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(35, 78, 66, 0.6);
-  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(183, 243, 75, 0.2);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(41, 66, 55, 0.6);
+  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(41, 66, 55, 0.8);
+  --shadow-modal: 0 20px 40px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(41, 66, 55, 0.9);
 }

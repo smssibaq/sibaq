@@ -24,7 +24,7 @@ export function PageHeader({
     <div
       className={twMerge(
         clsx(
-          'flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 mb-4 sm:pb-6 sm:mb-6 border-b border-border',
+          'flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between pb-3 mb-4 sm:pb-5 sm:mb-6 border-b border-border',
           className
         )
       )}
@@ -33,11 +33,11 @@ export function PageHeader({
       {leading}
       <div className="space-y-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground truncate">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight text-foreground break-words min-w-0">
             {title}
           </h1>
           {badge && (
-            <span className="inline-flex items-center whitespace-nowrap rounded-full bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider shrink-0 leading-none">
+            <span className="inline-flex items-center whitespace-nowrap rounded-full bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 text-[10px] md:text-xs font-semibold shrink-0 leading-none">
               {badge}
             </span>
           )}

@@ -51,7 +51,7 @@ export function TabsList({
       role="tablist"
       className={twMerge(
         clsx(
-          'inline-flex h-11 items-center justify-center rounded-lg bg-surface-subtle p-1 text-muted-foreground border border-border',
+          'scrollbar-none flex h-11 w-full max-w-full items-center justify-start gap-1 overflow-x-auto rounded-lg border border-border bg-surface-subtle p-1 text-muted-foreground sm:inline-flex sm:w-auto',
           className
         )
       )}
@@ -83,7 +83,7 @@ export function TabsTrigger({
       onClick={() => context.setActiveTab(value)}
       className={twMerge(
         clsx(
-          'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3.5 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+          'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] font-medium sm:px-3.5 sm:text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
           isActive
             ? 'bg-surface text-foreground shadow-sm'
             : 'hover:text-foreground text-muted-foreground',

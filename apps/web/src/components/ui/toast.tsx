@@ -69,14 +69,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Toast viewport */}
       <div
         aria-live="polite"
-        className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+        className="pointer-events-none fixed inset-x-3 bottom-24 z-[60] flex flex-col gap-2 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-full sm:max-w-sm"
       >
         {toasts.map((item) => (
           <div
             key={item.id}
             role="status"
             className={clsx(
-              'pointer-events-auto flex items-start gap-3 rounded-lg border p-4 shadow-dropdown animate-in slide-in-from-bottom-5 duration-200 bg-surface',
+              'pointer-events-auto flex items-start gap-3 rounded-xl border p-3 shadow-dropdown sm:p-4 animate-in slide-in-from-bottom-5 duration-200 bg-surface',
               item.type === 'success' && 'border-success/30 text-success',
               item.type === 'danger' && 'border-danger/30 text-danger',
               item.type === 'warning' && 'border-warning/30 text-warning',
@@ -89,7 +89,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {item.type === 'warning' && <AlertTriangle className="h-5 w-5" />}
               {item.type === 'info' && <Info className="h-5 w-5" />}
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1 break-words">
               <h4 className="text-sm font-semibold text-foreground">{item.title}</h4>
               {item.message && (
                 <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">

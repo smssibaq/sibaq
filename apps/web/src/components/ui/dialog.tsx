@@ -44,7 +44,7 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 animate-in fade-in duration-200 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? 'dialog-title' : undefined}
@@ -58,15 +58,15 @@ export function Dialog({
       <div
         className={twMerge(
           clsx(
-            'relative w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-modal animate-in zoom-in-95 duration-200',
+            'relative max-h-[calc(100dvh-1rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-2xl border border-border bg-surface p-4 pb-safe shadow-modal animate-in zoom-in-95 duration-200 sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl sm:p-6',
             className
           )
         )}
       >
-        <div className="flex items-start justify-between mb-4">
-          <div>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="min-w-0">
             {title && (
-              <h2 id="dialog-title" className="text-lg font-semibold text-foreground">
+              <h2 id="dialog-title" className="break-words text-base font-semibold leading-tight text-foreground sm:text-lg">
                 {title}
               </h2>
             )}
@@ -79,7 +79,7 @@ export function Dialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-surface-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Close dialog"
           >
             <X className="h-4 w-4" />

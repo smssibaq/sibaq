@@ -2,9 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { PageHeader } from '@/components/common/page-header';
 import { LoadingState } from '@/components/common/loading-state';
 import { EmptyState } from '@/components/common/empty-state';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { SquadLogo } from './squad-logo';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -251,83 +250,50 @@ export function SquadDetailPage() {
         </div>
       )}
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-        {/* Room Code Card */}
-        <Card className="border-border bg-surface shadow-card min-w-0">
-          <CardHeader className="pb-1.5 sm:pb-2">
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
-              Squad Join Code
-            </span>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between gap-2">
-              <span
-                className="text-base sm:text-lg lg:text-xl font-black tracking-wider text-primary font-mono select-all truncate"
-                title={squad.joinCode}
-              >
+      {/* Squad summary: one compact card instead of three tall ones */}
+      <Card className="mb-6 sm:mb-8">
+        <CardContent className="grid grid-cols-1 gap-4 p-4 pt-4 sm:grid-cols-3 sm:gap-6 sm:p-5 sm:pt-5">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Join code</p>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="min-w-0 truncate font-mono text-base font-bold tracking-wider text-primary select-all sm:text-lg" title={squad.joinCode}>
                 {squad.joinCode}
               </span>
-              <Button size="sm" variant="secondary" onClick={copyRoomCode} className="shrink-0 h-8 px-2.5">
+              <Button size="sm" variant="secondary" onClick={copyRoomCode} className="shrink-0 px-2.5" aria-label="Copy join code">
                 {copiedCode ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                 <span className="ml-1 text-xs">{copiedCode ? 'Copied' : 'Copy'}</span>
               </Button>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-              Share this code with teammates to join from the Join Squad page.
-            </p>
-          </CardContent>
-        </Card>
+            <p className="mt-1 text-xs text-muted-foreground">Friends enter this on the Join Squad page.</p>
+          </div>
 
-        {/* Member Count Card */}
-        <Card className="border-border bg-surface shadow-card min-w-0">
-          <CardHeader className="pb-1.5 sm:pb-2">
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
-              Active Roster
-            </span>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-foreground">
-                  {activeMembers.length}
-                </span>
-                <span className="text-xs text-muted-foreground font-medium">
-                  {activeMembers.length === 1 ? 'Player' : 'Players'}
-                </span>
-              </div>
-              <Badge variant="success">Active</Badge>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-              Ready for 5v5 / 7v7 / 11v11 friendlies.
+          <div className="min-w-0 sm:border-l sm:border-border sm:pl-6">
+            <p className="text-xs text-muted-foreground">Players</p>
+            <p className="mt-1 text-xl font-bold leading-tight text-foreground sm:text-2xl">{activeMembers.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {activeMembers.length === 1 ? 'player is' : 'players are'} in this squad
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Viewer Role Card */}
-        <Card className="border-border bg-surface shadow-card min-w-0">
-          <CardHeader className="pb-1.5 sm:pb-2">
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
-              Your Role in Squad
-            </span>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-base sm:text-lg font-bold text-foreground capitalize truncate">
-                {squad.currentUserRole || (squad.isOwner ? 'Owner' : 'Player')}
-              </span>
-              {squad.currentUserRole && <StatusBadge status={squad.currentUserRole} />}
+          <div className="min-w-0 sm:border-l sm:border-border sm:pl-6">
+            <p className="text-xs text-muted-foreground">Your role</p>
+            <div className="mt-1 flex items-center gap-2">
+              {squad.currentUserRole ? (
+                <StatusBadge status={squad.currentUserRole} />
+              ) : (
+                <span className="text-sm font-semibold text-foreground">{squad.isOwner ? 'Owner' : 'Player'}</span>
+              )}
             </div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+            <p className="mt-1 text-xs text-muted-foreground">
               {squad.isOwner
-                ? 'Full squad ownership and admin permissions'
+                ? 'You manage this squad'
                 : squad.isAdmin
-                ? 'Can approve members and schedule matches'
-                : 'Team player member'}
+                ? 'You can approve players and create games'
+                : 'You can join games and set your availability'}
             </p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Squad Roster Preview Section */}
       <div className="space-y-4">

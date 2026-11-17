@@ -29,7 +29,7 @@ export function ProfileSetupPage() {
     <form onSubmit={submit} className="mx-auto max-w-xl space-y-6 pb-6">
       <header className="space-y-2">
         <p className="text-sm font-bold uppercase tracking-widest text-primary">Kalikkanundo</p>
-        <h1 className="text-3xl font-black">Your game starts here</h1>
+        <h1 className="text-2xl font-bold leading-tight sm:text-3xl">Your game starts here</h1>
         <p className="text-sm text-muted-foreground">A little about you, your sports, and how you play.</p>
       </header>
       <ol aria-label="Onboarding progress" className="grid grid-cols-3 gap-2">

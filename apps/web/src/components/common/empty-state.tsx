@@ -24,7 +24,7 @@ export function EmptyState({
   isSearchEmpty = false,
 }: EmptyStateProps) {
   return (
-    <div className="flex min-h-[240px] sm:min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface p-5 sm:p-8 text-center animate-in fade-in duration-200">
+    <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface p-5 sm:min-h-[220px] sm:p-8 text-center animate-in fade-in duration-200">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-4">
         {icon ? (
           icon
@@ -34,8 +34,8 @@ export function EmptyState({
           <FolderOpen className="h-6 w-6" />
         )}
       </div>
-      <h3 className="text-base font-semibold text-foreground">{title}</h3>
-      <p className="mt-1.5 max-w-sm text-sm text-muted-foreground leading-relaxed">
+      <h3 className="text-sm font-semibold text-foreground sm:text-base">{title}</h3>
+      <p className="mt-1.5 max-w-sm text-xs text-muted-foreground sm:text-sm leading-relaxed">
         {description}
       </p>
 

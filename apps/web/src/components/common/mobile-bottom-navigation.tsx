@@ -82,7 +82,7 @@ export function MobileBottomNavigation() {
       {/* 1. FLOATING PILL CONTAINER */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed bottom-3 left-3 right-3 z-40 mx-auto max-w-[440px] lg:hidden select-none"
+        className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 z-40 mx-auto max-w-[440px] lg:hidden select-none"
         style={{
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}

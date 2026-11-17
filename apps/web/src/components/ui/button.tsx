@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
+  'inline-flex max-w-full items-center justify-center rounded-md text-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
   {
     variants: {
       variant: {
@@ -16,9 +16,9 @@ export const buttonVariants = cva(
         danger: 'bg-danger text-white hover:opacity-90 shadow-sm',
       },
       size: {
-        default: 'h-11 px-5 py-2 text-sm min-h-control',
-        sm: 'h-9 px-3 text-xs',
-        lg: 'h-12 px-8 text-base min-h-control',
+        default: 'min-h-control px-4 py-2 text-[13px] leading-tight sm:px-5 sm:text-sm',
+        sm: 'min-h-9 px-3 py-1.5 text-xs leading-tight',
+        lg: 'min-h-12 px-6 py-2.5 text-sm leading-tight sm:px-8 sm:text-base',
         icon: 'h-11 w-11 min-h-control',
       },
     },

@@ -97,14 +97,14 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-6 rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-modal">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div className="w-full max-w-md space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-card sm:space-y-6 sm:p-8">
         {/* Brand Header */}
         <div className="text-center">
           <div className="flex justify-center mb-1">
             <BrandLogo size="lg" showName={false} />
           </div>
-          <h2 className="mt-4 text-2xl font-black tracking-tight text-foreground uppercase">
+          <h2 className="mt-4 text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl">
             {authMode === 'signin' ? 'Sign in to' : 'Join'} <span className="text-primary">Kalikkanundo</span>
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -158,7 +158,7 @@ export function LoginPage() {
                   setAuthMode('signin');
                   setErrorMessage(null);
                 }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`min-h-10 py-2 text-sm font-semibold rounded-lg transition-all ${
                   authMode === 'signin'
                     ? 'bg-surface text-primary shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -172,7 +172,7 @@ export function LoginPage() {
                   setAuthMode('signup');
                   setErrorMessage(null);
                 }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`min-h-10 py-2 text-sm font-semibold rounded-lg transition-all ${
                   authMode === 'signup'
                     ? 'bg-surface text-primary shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
