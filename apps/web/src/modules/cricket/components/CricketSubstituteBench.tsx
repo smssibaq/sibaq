@@ -33,7 +33,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
         </div>
 
         {confirmedPlayers.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-2 text-center">No confirmed players yet</p>
+          <p className="text-xs text-muted-foreground py-2 text-center">No players in yet</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {confirmedPlayers.map((p) => (

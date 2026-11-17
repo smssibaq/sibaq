@@ -1,7 +1,9 @@
+import { GameLocationPicker } from '@/components/location/game-location-picker';
+import { manualLocation } from '@/components/location/location-service';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createMatchSchema, type CreateMatchFormData, KERALA_TURF_PRESETS } from './schema';
+import { createMatchSchema, type CreateMatchFormData } from './schema';
 import { useCreateMatch } from './api';
 import { squadApi } from '../squads/api';
 import type { Squad } from '@/types/contracts';
@@ -16,7 +18,6 @@ import {
   Calendar,
   ArrowRight,
   AlertCircle,
-  MapPin,
   Users,
 } from 'lucide-react';
 
@@ -32,7 +33,7 @@ export function MatchNewPage() {
 
   const [squads, setSquads] = useState<Squad[]>([]);
   const [isLoadingSquads, setIsLoadingSquads] = useState(true);
-  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [location, setLocation] = useState(manualLocation());
   const [serverError, setServerError] = useState<string | null>(null);
 
   // Default to tomorrow 8:00 PM IST
@@ -52,7 +53,7 @@ export function MatchNewPage() {
       squadId: routeSquadId,
       title: 'Friday Night Turf 7s',
       mode: 'friendly',
-      turfName: 'Decathlon Turf Arena, Kalamassery',
+      turfName: '',
       locationDescription: '',
       date: defaultDate,
       kickoffTime: defaultTime,
@@ -84,13 +85,6 @@ export function MatchNewPage() {
     loadSquads();
   }, [routeSquadId, setValue]);
 
-  const handlePresetSelect = (turfName: string) => {
-    setSelectedPreset(turfName);
-    if (turfName) {
-      setValue('turfName', turfName, { shouldValidate: true });
-    }
-  };
-
   const onSubmit = async (data: CreateMatchFormData) => {
     setServerError(null);
     try {
@@ -112,6 +106,7 @@ export function MatchNewPage() {
         title: data.title,
         mode: data.mode,
         turfName: finalTurf,
+        location,
         startsAt: utcStartsAt,
         playersPerTeam: Number(data.playersPerTeam),
         rsvpDeadline: utcRsvpDeadline,
@@ -279,7 +274,7 @@ export function MatchNewPage() {
               {/* Optional RSVP Deadline */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-border/80 bg-surface-subtle/40 p-4">
                 <FormField
-                  label="RSVP Cutoff Date (Optional)"
+                  label="Availability Cutoff Date (Optional)"
                   htmlFor="rsvpDeadlineDate"
                   error={errors.rsvpDeadlineDate?.message}
                 >
@@ -287,7 +282,7 @@ export function MatchNewPage() {
                 </FormField>
 
                 <FormField
-                  label="RSVP Cutoff Time (IST - Optional)"
+                  label="Availability Cutoff Time (IST - Optional)"
                   htmlFor="rsvpDeadlineTime"
                   error={errors.rsvpDeadlineTime?.message}
                 >
@@ -295,51 +290,8 @@ export function MatchNewPage() {
                 </FormField>
               </div>
 
-              {/* Turf Presets Selector */}
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-primary" />
-                  <span>Kerala Turf Venue Preset (Optional Shortcut)</span>
-                </label>
-                <Select
-                  value={selectedPreset}
-                  onChange={(e) => handlePresetSelect(e.target.value)}
-                >
-                  <option value="">-- Choose from Popular Kerala Turfs --</option>
-                  {KERALA_TURF_PRESETS.map((t) => (
-                    <option key={t.name} value={t.name}>
-                      {t.name} ({t.city})
-                    </option>
-                  ))}
-                </Select>
-              </div>
-
-              {/* Custom Turf Name */}
-              <FormField
-                label="Turf Venue Name"
-                htmlFor="turfName"
-                error={errors.turfName?.message}
-                required
-              >
-                <Input
-                  id="turfName"
-                  placeholder="e.g. Decathlon Arena, Aluva / Kickoff Turf, Calicut"
-                  {...register('turfName')}
-                />
-              </FormField>
-
-              {/* Optional Location Notes / Description */}
-              <FormField
-                label="Location Details / Gate / Field Number (Optional)"
-                htmlFor="locationDescription"
-                error={errors.locationDescription?.message}
-              >
-                <Input
-                  id="locationDescription"
-                  placeholder="e.g. Pitch #2, Near Gate 4, Parking available behind pavilion"
-                  {...register('locationDescription')}
-                />
-              </FormField>
+              <GameLocationPicker value={location} onChange={value=>{setLocation(value);setValue('turfName',value.name,{shouldValidate:true});}} disabled={createMatchMutation.isPending}/>
+              {errors.turfName&&<p role="alert" className="text-xs text-danger">{errors.turfName.message}</p>}
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">

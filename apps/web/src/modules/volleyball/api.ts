@@ -1,3 +1,4 @@
+import { createWithLocation } from '@/components/location/location-service';
 import { supabase } from '@/infrastructure/supabase/client';
 import type {
   CreateVolleyballGameInput,
@@ -34,13 +35,13 @@ export const volleyballApi = {
   getGame: (gameId: string) => callRpc<VolleyballGameDetail>('volleyball_get_game', { p_game: gameId }),
 
   createGame: (input: CreateVolleyballGameInput) =>
-    callRpc<string>('volleyball_create_game', {
+    createWithLocation('volleyball', {
       p_title: input.title,
       p_venue: input.venue,
       p_starts_at: input.startsAt,
       p_players_per_side: input.playersPerSide,
       p_notes: input.notes?.trim() ? input.notes.trim() : null,
-    }),
+    }, input.location),
 
   previewByCode: async (code: string) => {
     const rows = await callRpc<VolleyballInvitePreview[]>('volleyball_preview_by_code', { p_code: code });

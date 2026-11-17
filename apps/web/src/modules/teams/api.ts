@@ -182,7 +182,7 @@ export const teamApi: ExtendedTeamService = {
     if (teamError) throw teamError;
     const { data: attendance, error: attendanceError } = await supabase.from('match_attendance').select('status').eq('match_id', team.match_id).eq('user_id', userId).maybeSingle();
     if (attendanceError) throw attendanceError;
-    if (attendance?.status !== 'playing') throw new Error('Only players with a Playing RSVP can join active lineups.');
+    if (attendance?.status !== 'playing') throw new Error("Only players with a Playing Availability can join active lineups.");
 
     // 2. If assigning as substitute or coordinates are null, explicitly use 'SUB' to bypass 'Valid pitch coordinates required' check
     const effectivePosition = isSubstitute || !coordinate ? 'SUB' : position;

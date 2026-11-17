@@ -68,7 +68,7 @@ export function CricketHubPage() {
         }
       />
 
-      {nextGame && <FeaturedFixtureCard startsAt={nextGame.starts_at} formatBadge={formatFormat(nextGame.players_per_side, nextGame.overs_per_innings)} title={nextGame.title} subtitle={nextGame.is_organizer ? 'Organized by You' : 'Cricket Match'} dateText={new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' }).format(new Date(nextGame.starts_at))} venueText={nextGame.venue ?? ''} lineupText="Tactical Field" rsvpText="RSVP & Details" onLineup={() => go(cricketPaths.game(nextGame.game_id))} onRsvp={() => go(cricketPaths.game(nextGame.game_id))} />}
+      {nextGame && <FeaturedFixtureCard startsAt={nextGame.starts_at} formatBadge={formatFormat(nextGame.players_per_side, nextGame.overs_per_innings)} title={nextGame.title} subtitle={nextGame.is_organizer ? 'Organized by You' : 'Cricket Match'} dateText={new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' }).format(new Date(nextGame.starts_at))} venueText={nextGame.venue ?? ''} lineupText="Tactical Field" rsvpText="Match Details" onLineup={() => go(cricketPaths.game(nextGame.game_id))} onRsvp={() => go(cricketPaths.game(nextGame.game_id))} />}
       <div className="grid grid-cols-4 gap-1.5" role="tablist" aria-label="Filter games">
         {FILTERS.map((f) => (
           <button

@@ -63,6 +63,7 @@ export interface VolleyballInvitePreview {
 }
 
 export interface CreateVolleyballGameInput {
+  location?: import('@/components/location/location-service').GameLocation;
   title: string;
   venue: string;
   startsAt: string; // ISO

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
+import { GameLocationDetails } from '@/components/location/game-location-details';
 import { Badge, Button, Card, ConfirmDialog } from '@/components/ui';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/empty-state';
@@ -34,7 +35,8 @@ export function CricketGamePage({gameId}:{gameId:string}){
       {game.is_organizer && <div className="relative shrink-0"><Button variant="outline" aria-expanded={actionsOpen} aria-controls="cricket-organizer-actions" disabled={status.isPending} onClick={()=>setActionsOpen(!actionsOpen)}>Actions</Button>
         {actionsOpen && <div id="cricket-organizer-actions" className="absolute right-0 z-30 mt-2 w-56 space-y-2 rounded-xl border border-border bg-surface p-3 shadow-lg">{([{value:'completed',label:'Mark completed'},{value:'cancelled',label:'Cancel game'},{value:'scheduled',label:'Reopen'}] as const).filter(action=>action.value!==game.status).map(action=><Button key={action.value} variant="outline" className="w-full justify-start" onClick={()=>{setActionsOpen(false);setConfirm(action.value);}}>{action.label}</Button>)}</div>}
       </div>}
-    </div><div className="space-y-1 text-sm text-muted-foreground"><p>{formatInTimezone(game.starts_at)}</p>{game.venue && <p className="break-words">{game.venue}</p>}<p>{game.capacity} players · {game.players_per_side} per side</p></div>{game.notes && <p className="whitespace-pre-wrap break-words border-t border-border pt-3 text-sm">{game.notes}</p>}</Card>
+    </div><div className="space-y-1 text-sm text-muted-foreground"><p>{formatInTimezone(game.starts_at)}</p><p>{game.capacity} players · {game.players_per_side} per side</p></div>{game.notes && <p className="whitespace-pre-wrap break-words border-t border-border pt-3 text-sm">{game.notes}</p>}</Card>
+    <GameLocationDetails gameId={game.game_id} venue={game.venue} canEdit={game.is_organizer} />
     {closed && <p role="status" className="rounded-lg border border-border bg-surface-subtle p-4 text-sm">This game is {game.status}. Attendance and lineup editing are closed.</p>}
     <CricketAttendance game={game} />
     <CricketToss game={game} />

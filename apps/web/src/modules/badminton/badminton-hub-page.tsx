@@ -1,3 +1,5 @@
+import { GameLocationPicker } from '@/components/location/game-location-picker';
+import { manualLocation } from '@/components/location/location-service';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -26,6 +28,7 @@ export function BadmintonHubPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [location,setLocation] = useState(manualLocation());
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'live' | 'past'>('upcoming');
 
@@ -96,6 +99,7 @@ export function BadmintonHubPage() {
         squadId: form.squadId || managedSquads[0]?.id || '',
         title: form.title,
         venue: form.venue,
+        location,
         court: form.court,
         startsAt: form.startsAt,
         format: form.format,
@@ -121,7 +125,7 @@ export function BadmintonHubPage() {
       {/* 1. Page Header (Exact Football Hierarchy) */}
       <PageHeader
         title="Badminton Match Center"
-        description="Unified matchday schedule for singles & doubles. Track court reservations, RSVPs, and player pairs."
+        description="Unified matchday schedule for singles & doubles. Track court reservations, availability updates, and player pairs."
         badge={upcomingGames.length > 0 ? `${upcomingGames.length} Upcoming` : 'Fixtures'}
         actions={
           canCreate ? (
@@ -194,14 +198,8 @@ export function BadmintonHubPage() {
                 />
               </label>
 
-              <label className="space-y-1 text-xs font-semibold text-foreground">
-                <span>Venue / Stadium</span>
-                <Input
-                  value={form.venue}
-                  placeholder="e.g. RSC Indoor Stadium, Kadavanthra"
-                  onChange={(e) => setForm({ ...form, venue: e.target.value })}
-                />
-              </label>
+              <div className="sm:col-span-2"><GameLocationPicker value={location} onChange={value=>{setLocation(value);setForm({...form,venue:value.name});}} disabled={createMutation.isPending}/></div>
+
 
               <label className="space-y-1 text-xs font-semibold text-foreground">
                 <span>Court Number</span>
@@ -241,7 +239,7 @@ export function BadmintonHubPage() {
           dateText={formatDate(nextUpcomingGame.startsAt)}
           venueText={nextUpcomingGame.venue}
           lineupText="Pairs & Lineup"
-          rsvpText="RSVP & Details"
+          rsvpText="Match Details"
           onLineup={() => goToGame(nextUpcomingGame.id)}
           onRsvp={() => goToGame(nextUpcomingGame.id)}
         />
@@ -289,7 +287,7 @@ export function BadmintonHubPage() {
               playingCount={g.confirmedCount}
               capacity={g.capacity}
               lineupText="Pairs"
-              rsvpText="RSVP"
+              rsvpText="Availability"
               onLineup={() => goToGame(g.id)}
               onRsvp={() => goToGame(g.id)}
             />

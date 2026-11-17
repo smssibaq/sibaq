@@ -242,7 +242,7 @@ export function LineupEditorPage() {
   }
   function movePlayer(player: FormationPlayer, target: string) {
     if (!isManager || !match || saveMutation.isPending) return;
-    if (!confirmedPlayers.some(p => p.userId === player.userId)) { toast.error('RSVP required', 'Only Playing players can join active teams.'); return; }
+    if (!confirmedPlayers.some(p => p.userId === player.userId)) { toast.error("Availability required", 'Only Playing players can join active teams.'); return; }
     try {
       updateDrafts(moveFootballPlayer(captureDrafts(), player, target, serverTeams, match.playersPerTeam), target === 'bench' || target === 'remove' ? undefined : target);
       setMenuPlayer(null);

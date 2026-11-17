@@ -51,7 +51,7 @@ export function FeaturedFixtureCard({
   dateText,
   venueText,
   lineupText = 'Tactical Lineup',
-  rsvpText = 'RSVP & Details',
+  rsvpText = "Match Details",
   onLineup,
   onRsvp,
 }: FeaturedFixtureProps) {
@@ -235,7 +235,7 @@ export function MatchFixtureCard({
   playingCount,
   capacity,
   lineupText = 'Lineup',
-  rsvpText = 'RSVP',
+  rsvpText = "Availability",
   onLineup,
   onRsvp,
 }: MatchFixtureCardProps) {

@@ -1,3 +1,5 @@
+import { GameLocationPicker } from '@/components/location/game-location-picker';
+import { manualLocation } from '@/components/location/location-service';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
@@ -22,6 +24,7 @@ export function VolleyballCreatePage() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [venue, setVenue] = useState('');
+  const [location,setLocation] = useState(manualLocation());
   const [playersPerSide, setPlayersPerSide] = useState<VolleyballPlayersPerSide>(6);
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,6 +60,7 @@ export function VolleyballCreatePage() {
     create.mutate({
       title: title.trim(),
       venue: venue.trim(),
+      location,
       startsAt: startsAt.toISOString(),
       playersPerSide,
       notes,
@@ -82,9 +86,9 @@ export function VolleyballCreatePage() {
             </FormField>
           </div>
 
-          <FormField label="Court / location" htmlFor="vb-venue" error={errors.venue} required>
-            <Input id="vb-venue" value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Beach court, Kozhikode" isInvalid={!!errors.venue} />
-          </FormField>
+          <GameLocationPicker value={location} onChange={value=>{setLocation(value);setVenue(value.name);}} disabled={create.isPending}/>
+          {errors.venue&&<p role="alert" className="text-xs text-danger">{errors.venue}</p>}
+
 
           <FormField label="Format">
             <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Format">
@@ -108,7 +112,7 @@ export function VolleyballCreatePage() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Needs {playersPerSide * 2} confirmed players to be ready ({playersPerSide} per team).
+              Needs {playersPerSide * 2} players in to be ready ({playersPerSide} per team).
             </p>
           </FormField>
 

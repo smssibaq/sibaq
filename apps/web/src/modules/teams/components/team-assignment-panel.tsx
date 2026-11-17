@@ -88,7 +88,7 @@ export function TeamAssignmentPanel({
           {assignedUserIds.size > 0 && unassigned.length === 0 ? (
             <>
               <CheckCircle className="h-5 w-5 text-success mx-auto mb-1.5" />
-              <p className="font-semibold text-foreground">All Confirmed Players Assigned</p>
+              <p className="font-semibold text-foreground">All Players In Assigned</p>
               <p className="text-[11px] mt-0.5">
                 Every confirmed attendee is assigned to a match team.
               </p>
@@ -96,7 +96,7 @@ export function TeamAssignmentPanel({
           ) : confirmedAttendance.length === 0 ? (
             <>
               <Users className="h-5 w-5 text-primary mx-auto mb-1.5" />
-              <p className="font-semibold text-foreground">No Confirmed Players</p>
+              <p className="font-semibold text-foreground">No Players In</p>
               <p className="text-[11px] mt-0.5">
                 Players appear here after responding Playing for this match.
               </p>

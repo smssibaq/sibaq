@@ -77,7 +77,7 @@ export function VolleyballHubPage() {
       {/* 1. Page Header (Matches Football Match Center) */}
       <PageHeader
         title="Volleyball Match Center"
-        description="Unified matchday schedule for 4v4 & 6v6 beach and court games. Track team RSVPs and split squads."
+        description="Unified matchday schedule for 4v4 & 6v6 beach and court games. Track team availability updates and split squads."
         badge={upcomingGames.length > 0 ? `${upcomingGames.length} Upcoming` : 'Fixtures'}
         actions={
           <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export function VolleyballHubPage() {
           dateText={formatDate(nextUpcomingGame.starts_at)}
           venueText={nextUpcomingGame.venue}
           lineupText="Teams & Lineup"
-          rsvpText="RSVP & Details"
+          rsvpText="Match Details"
           onLineup={() => go(volleyballPaths.game(nextUpcomingGame.game_id))}
           onRsvp={() => go(volleyballPaths.game(nextUpcomingGame.game_id))}
         />
@@ -160,7 +160,7 @@ export function VolleyballHubPage() {
               playingCount={g.playing_count}
               capacity={g.capacity}
               lineupText="Teams"
-              rsvpText="RSVP"
+              rsvpText="Availability"
               onLineup={() => go(volleyballPaths.game(g.game_id))}
               onRsvp={() => go(volleyballPaths.game(g.game_id))}
             />

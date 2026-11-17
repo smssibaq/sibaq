@@ -50,7 +50,7 @@ export function AttendanceList({
       <div className="flex items-center justify-between border-b border-border pb-3">
         <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          <span>Player RSVP Roster</span>
+          <span>Player Availability Roster</span>
         </h4>
         <span className="text-xs text-muted-foreground">
           {attendees.length + waitlist.length} total participants
@@ -167,7 +167,7 @@ export function AttendanceList({
           if (list.length === 0) {
             return (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                {activeTab === 'playing' && 'No players confirmed yet. Be the first to RSVP Playing!'}
+                {activeTab === 'playing' && "No players confirmed yet. Be the first to Availability Playing!"}
                 {activeTab === 'maybe' && 'No players in the Maybe category.'}
                 {activeTab === 'not_playing' && 'No players have marked themselves Out.'}
               </div>
@@ -196,7 +196,7 @@ export function AttendanceList({
                         </div>
                         {att.updatedAt && (
                           <span className="text-[11px] text-muted-foreground block">
-                            RSVPed {formatRelativeTime(att.updatedAt)}
+                            Responded {formatRelativeTime(att.updatedAt)}
                           </span>
                         )}
                       </div>

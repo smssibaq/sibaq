@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/infrastructure/supabase/client';
+import { createWithLocation } from '@/components/location/location-service';
 import { useToast } from '@/components/ui';
 import type { Json } from '@/types/database.types';
 import type { CricketAttendance, CricketFieldPosition, CricketGameDetail, CricketGameSummary, CricketSide, CricketStatus, CreateCricketGameInput } from './types';
@@ -34,11 +35,11 @@ export const cricketApi={
     const game=await unwrap<CricketGameDetail>(supabase.rpc('cricket_get_game',{p_game:id}));
     return game ? {...game,players:game.players ?? [],batting_order:game.batting_order ?? [],field_positions:game.field_positions ?? []}:game;
   },
-  createGame:(input:CreateCricketGameInput)=>unwrap<string>(supabase.rpc('cricket_create_game',{
+  createGame:(input:CreateCricketGameInput)=>createWithLocation('cricket',{
     p_title:input.title,p_venue:input.venue ?? '',p_starts_at:input.startsAt,
     p_players_per_side:input.playersPerSide,p_overs:input.oversPerInnings,
     p_notes:input.notes?.trim() || null,p_squad:input.squad ?? null,
-  })),
+  },input.location),
   joinByCode:(code:string)=>unwrap<string>(supabase.rpc('cricket_join_by_code',{p_code:code.trim().toUpperCase()})),
   setAttendance:(id:string,status:CricketAttendance)=>unwrap<void>(supabase.rpc('cricket_set_attendance',{p_game:id,p_status:status})),
   setTeam:(id:string,userId:string,side:CricketSide|null)=>unwrap<void>(supabase.rpc('cricket_set_team',{p_game:id,p_user:userId,p_side:side})),

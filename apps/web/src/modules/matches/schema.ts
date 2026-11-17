@@ -89,7 +89,7 @@ export const createMatchSchema = z
       }
     },
     {
-      message: 'RSVP deadline must be scheduled strictly before match kickoff',
+      message: "Availability deadline must be scheduled strictly before match kickoff",
       path: ['rsvpDeadlineDate'],
     }
   )
@@ -105,7 +105,7 @@ export const createMatchSchema = z
       }
     },
     {
-      message: 'RSVP deadline must be in the future',
+      message: "Availability deadline must be in the future",
       path: ['rsvpDeadlineDate'],
     }
   );
@@ -158,7 +158,7 @@ export const updateMatchSchema = z
       }
     },
     {
-      message: 'RSVP deadline must be before kickoff',
+      message: "Availability deadline must be before kickoff",
       path: ['rsvpDeadlineDate'],
     }
   );

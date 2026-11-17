@@ -65,7 +65,7 @@ export function AttendanceSummary({
           {isRsvpClosed && (
             <Badge variant="danger" className="gap-1 px-2.5 py-1 text-xs font-bold">
               <ShieldAlert className="h-3.5 w-3.5" />
-              <span>RSVP Closed</span>
+              <span>Availability Closed</span>
             </Badge>
           )}
         </div>
@@ -103,7 +103,7 @@ export function AttendanceSummary({
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-center">
           <div className="flex items-center justify-center gap-1 text-xs font-bold text-primary">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            <span>Playing</span>
+            <span>I'm In</span>
           </div>
           <div className="text-xl font-extrabold text-foreground mt-0.5">{playingCount}</div>
         </div>
@@ -138,7 +138,7 @@ export function AttendanceSummary({
         <div className="rounded-lg border border-border/60 bg-surface-subtle/50 px-3 py-2 text-xs flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Clock className="h-3.5 w-3.5 text-primary" />
-            <span>RSVP Cutoff Deadline:</span>
+            <span>Availability Cutoff Deadline:</span>
             <strong className="text-foreground">
               {new Date(rsvpDeadline).toLocaleString('en-IN', {
                 dateStyle: 'medium',

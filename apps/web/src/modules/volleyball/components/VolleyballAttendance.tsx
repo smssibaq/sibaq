@@ -6,9 +6,9 @@ import { readinessText } from '../utils';
 import { useSetAttendance } from '../hooks';
 
 const OPTIONS: { value: Attendance; label: string; Icon: typeof Check }[] = [
-  { value: 'playing', label: 'Playing', Icon: Check },
+  { value: 'playing', label: "I'm In", Icon: Check },
   { value: 'maybe', label: 'Maybe', Icon: HelpCircle },
-  { value: 'not_playing', label: "Can't", Icon: X },
+  { value: 'not_playing', label: "Can't Make It", Icon: X },
 ];
 
 export function VolleyballAttendance({ game }: { game: VolleyballGameDetail }) {
@@ -22,6 +22,7 @@ export function VolleyballAttendance({ game }: { game: VolleyballGameDetail }) {
 
   return (
     <Card className="p-4 space-y-4">
+      {setAttendance.isPending&&<p role="status" className="text-xs text-primary">Updating availability...</p>}
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
           <p className={clsx('text-sm font-semibold', ready ? 'text-success' : 'text-foreground')}>
@@ -38,10 +39,10 @@ export function VolleyballAttendance({ game }: { game: VolleyballGameDetail }) {
       </div>
 
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-2">Your RSVP</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Are you playing?</p>
         <div className="grid grid-cols-3 gap-2">
           {OPTIONS.map(({ value, label, Icon }) => {
-            const active = game.my_status === value;
+            const active = (setAttendance.isPending ? setAttendance.variables : game.my_status) === value;
             const blocked = closed || (value === 'playing' && full && game.my_status !== 'playing');
             return (
               <button
@@ -67,7 +68,7 @@ export function VolleyballAttendance({ game }: { game: VolleyballGameDetail }) {
         {full && game.my_status !== 'playing' && !closed && (
           <p className="mt-2 text-xs text-muted-foreground">All {game.capacity} spots are taken. Pick Maybe to stay in the loop.</p>
         )}
-        {closed && <p className="mt-2 text-xs text-muted-foreground">This game is {game.status}. RSVPs are closed.</p>}
+        {closed && <p className="mt-2 text-xs text-muted-foreground">This game is {game.status}. availability updates are closed.</p>}
       </div>
     </Card>
   );

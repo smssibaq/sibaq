@@ -26,7 +26,7 @@ export function AttendanceButton({
   return (
     <div
       role="group"
-      aria-label="Attendance RSVP options"
+      aria-label="Are you playing?"
       className={clsx('flex flex-wrap items-center gap-2.5', className)}
     >
       {/* Playing / Going Button */}
@@ -48,7 +48,7 @@ export function AttendanceButton({
         ) : (
           <Check className={clsx('h-4 w-4 mr-2', isPlaying ? 'text-primary-foreground stroke-[3]' : 'text-primary')} />
         )}
-        <span>Playing</span>
+        <span>I'm In</span>
       </button>
 
       {/* Maybe Button */}
@@ -92,7 +92,7 @@ export function AttendanceButton({
         ) : (
           <X className={clsx('h-4 w-4 mr-2', isNotPlaying ? 'text-danger' : 'text-muted-foreground')} />
         )}
-        <span>Can&apos;t Play</span>
+        <span>Can&apos;t Make It</span>
       </button>
     </div>
   );

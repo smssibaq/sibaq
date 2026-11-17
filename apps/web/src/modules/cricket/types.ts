@@ -64,6 +64,7 @@ export interface CricketFieldPosition {
 }
 
 export interface CreateCricketGameInput {
+  location?: import('@/components/location/location-service').GameLocation;
   title: string;
   venue: string | null;
   startsAt: string;

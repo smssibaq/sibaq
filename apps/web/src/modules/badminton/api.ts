@@ -1,3 +1,4 @@
+import { createWithLocation, updateWithLocation, type GameLocation } from '@/components/location/location-service';
 import { supabase } from '@/infrastructure/supabase/client';
 import type {
   BadmintonFormat,
@@ -55,8 +56,9 @@ export interface BadmintonGameDetail {
 }
 
 export const badmintonApi = {
-  async updateGame(gameId: string, title: string, venue: string, startsAt: string): Promise<void> {
+  async updateGame(gameId: string, title: string, venue: string, startsAt: string, location?: GameLocation): Promise<void> {
     if (!title.trim() || !Number.isFinite(new Date(startsAt).getTime())) throw new Error('Enter a title and valid start time.');
+    if(location) return updateWithLocation(gameId,{p_title:title.trim(),p_venue:venue.trim(),p_starts_at:new Date(startsAt).toISOString()},location);
     const { error } = await supabase.rpc('badminton_update_game', { p_game: gameId, p_title: title.trim(), p_venue: venue.trim(), p_starts_at: new Date(startsAt).toISOString() });
     if (error) throw error;
   },
@@ -179,8 +181,9 @@ export const badmintonApi = {
     format: BadmintonFormat;
     court?: string;
     skillLevel?: string;
+    location?: GameLocation;
   }): Promise<string> {
-    const { data, error } = await supabase.rpc('badminton_create_game', {
+    const data = await createWithLocation('badminton', {
       p_squad: params.squadId,
       p_title: params.title.trim(),
       p_venue: params.venue.trim() || null,
@@ -188,8 +191,7 @@ export const badmintonApi = {
       p_format: params.format,
       p_court: params.court?.trim() || null,
       p_skill_level: params.skillLevel?.trim() || null,
-    });
-    if (error) throw error;
+    }, params.location);
     return data;
   },
 
@@ -208,7 +210,7 @@ export const badmintonApi = {
     if (attendanceError) throw attendanceError;
     const max = game.format === 'singles' ? 1 : 2;
     if (sideA.length > max || sideB.length > max) throw new Error('Too many players on a side.');
-    if ([...sideA, ...sideB].some(id => !attendance.some(p => p.user_id === id))) throw new Error('Attendance changed. Only confirmed players can be assigned.');
+    if ([...sideA, ...sideB].some(id => !attendance.some(p => p.user_id === id))) throw new Error("Attendance changed. Only players in can be assigned.");
     const { error } = await supabase.rpc('badminton_set_pairs', {
       p_game: gameId,
       p_side_a: sideA,

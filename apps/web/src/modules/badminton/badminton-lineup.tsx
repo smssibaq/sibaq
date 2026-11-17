@@ -169,7 +169,7 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
         <p className="text-sm text-muted-foreground" role="status">{selected ? 'Choose a team below, or click a player for more actions.' : 'Click a player to move them to a team or the bench.'}</p>
         <div className="grid grid-cols-2 gap-2">{(['A', 'B'] as const).map(side => <Button key={side} type="button" variant={selected && assignment(selected) === side ? 'default' : 'outline'} aria-pressed={Boolean(selected && assignment(selected) === side)} disabled={!selected || mutation.isPending} onClick={() => { if (selected) move(selected, side); }}>Team {side}</Button>)}</div>
       </>}
-      <p className="text-xs text-muted-foreground">Drag confirmed players between court and bench. On touch screens, hold briefly to drag; tap for actions.</p>
+      <p className="text-xs text-muted-foreground">Drag players in between court and bench. On touch screens, hold briefly to drag; tap for actions.</p>
       <section ref={benchRef} className={"space-y-2 rounded-xl border p-3 transition-colors " + (dragging.drag ? dragTarget === "bench" ? "border-primary bg-primary/10" : "border-dashed border-primary/40" : "border-border")}><h3 className="text-sm font-bold">Substitutes &amp; Bench</h3>
         <p className="text-xs font-semibold text-muted-foreground">Confirmed substitutes</p>
         {confirmed.filter(p => state.bench.includes(p.userId)).map(playerCard)}
@@ -178,9 +178,9 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
         {game.players.filter(p => p.status === 'maybe').map(playerCard)}
         {!game.players.some(p => p.status === 'maybe') && <p className="text-xs text-muted-foreground">No Maybe responses.</p>}
       </section>
-      <section className="space-y-2"><h3 className="text-sm font-bold">Unassigned confirmed players</h3>
+      <section className="space-y-2"><h3 className="text-sm font-bold">Unassigned players in</h3>
         {confirmed.filter(p => !slots.includes(p.userId) && !state.bench.includes(p.userId)).map(playerCard)}
-        {!confirmed.some(p => !slots.includes(p.userId) && !state.bench.includes(p.userId)) && <p className="text-xs text-muted-foreground">No unassigned confirmed players.</p>}
+        {!confirmed.some(p => !slots.includes(p.userId) && !state.bench.includes(p.userId)) && <p className="text-xs text-muted-foreground">No unassigned players in.</p>}
       </section>
       {editing && <section className="space-y-2"><h3 className="text-sm font-bold">Active players</h3>{confirmed.filter(p => slots.includes(p.userId)).map(playerCard)}</section>}
       {game.isOrganizer && !game.lineupStorageReady && <p role="alert" className="text-sm text-warning">Bench storage is not installed. Run the badminton_lineup_bench SQL migration before saving.</p>}

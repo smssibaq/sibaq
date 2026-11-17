@@ -77,7 +77,7 @@ function getPageBreadcrumbs(pathname: string): { section: string; title: string 
     return { section: 'Matches', title: 'Tactical Lineup Board' };
   }
   if (pathname.startsWith('/matches/')) {
-    return { section: 'Matches', title: 'Match Details & RSVP' };
+    return { section: 'Matches', title: "Match Details & Availability" };
   }
   if (pathname === '/squads') {
     return { section: 'Rosters', title: 'Squad Hub' };

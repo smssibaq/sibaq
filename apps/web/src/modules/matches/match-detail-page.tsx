@@ -1,3 +1,7 @@
+import { GameLocationPicker } from '@/components/location/game-location-picker';
+import { getGameLocation, manualLocation } from '@/components/location/location-service';
+import { useQuery } from '@tanstack/react-query';
+import { GameLocationDetails } from '@/components/location/game-location-details';
 import { useState, useEffect, useMemo } from 'react';
 import { ExpensePanel } from '@/modules/expenses';
 import { LoadingState } from '@/components/common/loading-state';
@@ -90,6 +94,8 @@ export function MatchDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editTurfName, setEditTurfName] = useState('');
+  const [editLocation,setEditLocation] = useState(manualLocation());
+  const {data:savedLocation}=useQuery({queryKey:['game-location',matchId],queryFn:()=>getGameLocation(matchId),enabled:Boolean(matchId)});
   const [editDate, setEditDate] = useState('');
   const [editTime, setEditTime] = useState('');
   const [editRsvpDeadlineDate, setEditRsvpDeadlineDate] = useState('');
@@ -215,7 +221,7 @@ export function MatchDetailPage() {
           `All ${maxCapacity} confirmed slots are taken. Join the waitlist to get auto-promoted!`
         );
       } else if (msg.includes('RSVP_DEADLINE_PASSED')) {
-        toast.error('RSVP Locked', 'The cutoff deadline has passed for this match.');
+        toast.error("Availability Locked", 'The cutoff deadline has passed for this match.');
       } else {
         toast.error('Update Failed', msg);
       }
@@ -247,6 +253,7 @@ export function MatchDetailPage() {
     if (!match) return;
     setEditTitle(match.title);
     setEditTurfName(match.turfName);
+    setEditLocation(savedLocation??manualLocation(match.turfName));
     const d = new Date(match.startsAt);
     setEditDate(d.toISOString().slice(0, 10));
     setEditTime(`${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`);
@@ -276,6 +283,7 @@ export function MatchDetailPage() {
       await updateMatchMutation.mutateAsync({
         title: editTitle.trim(),
         turfName: editTurfName.trim(),
+        location: editLocation,
         startsAt: utcStartsAt,
         status: editStatus,
         rsvpDeadline: utcRsvpDeadline,
@@ -414,6 +422,7 @@ export function MatchDetailPage() {
         </div>
       </div>
 
+      <GameLocationDetails gameId={matchId} venue={match.turfName} canEdit={isAdminOrOwner} />
       {/* ========================================================================= */}
       {/* 2. YOUR MATCH AVAILABILITY — MOST IMPORTANT ACTION                        */}
       {/* ========================================================================= */}
@@ -423,10 +432,10 @@ export function MatchDetailPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-primary mb-1">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>Your Match Availability</span>
+                <span>Are you playing?</span>
               </div>
               <h2 className="text-lg sm:text-xl md:text-2xl font-black text-foreground">
-                Are You Playing?
+                Are you playing?
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                 Let your squad know if you&apos;re joining this match.
@@ -447,13 +456,13 @@ export function MatchDetailPage() {
           </div>
 
           {/* Large Selection Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
             {/* 1. Playing Button */}
             <button
               type="button"
               disabled={isRsvpDisabled || setAttendanceMutation.isPending}
               onClick={() => handleStatusChange('playing')}
-              className={`flex items-center justify-center gap-2.5 rounded-xl min-h-[56px] px-5 py-3 text-sm sm:text-base font-bold transition-all border ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 rounded-xl min-h-[56px] px-1.5 sm:px-5 py-2 text-[11px] sm:text-base font-bold transition-all border ${
                 currentRsvpStatus === 'playing'
                   ? 'bg-primary text-primary-foreground border-primary shadow-md scale-[1.01]'
                   : 'bg-surface hover:bg-surface-subtle text-foreground border-border hover:border-primary/50'
@@ -468,7 +477,7 @@ export function MatchDetailPage() {
                   }`}
                 />
               )}
-              <span>Playing</span>
+              <span>I'm In</span>
             </button>
 
             {/* 2. Maybe Button */}
@@ -476,7 +485,7 @@ export function MatchDetailPage() {
               type="button"
               disabled={isRsvpDisabled || setAttendanceMutation.isPending}
               onClick={() => handleStatusChange('maybe')}
-              className={`flex items-center justify-center gap-2.5 rounded-xl min-h-[56px] px-5 py-3 text-sm sm:text-base font-bold transition-all border ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 rounded-xl min-h-[56px] px-1.5 sm:px-5 py-2 text-[11px] sm:text-base font-bold transition-all border ${
                 currentRsvpStatus === 'maybe'
                   ? 'bg-warning/20 text-warning border-warning shadow-md scale-[1.01]'
                   : 'bg-surface hover:bg-surface-subtle text-foreground border-border hover:border-warning/50'
@@ -499,7 +508,7 @@ export function MatchDetailPage() {
               type="button"
               disabled={isRsvpDisabled || setAttendanceMutation.isPending}
               onClick={() => handleStatusChange('not_playing')}
-              className={`flex items-center justify-center gap-2.5 rounded-xl min-h-[56px] px-5 py-3 text-sm sm:text-base font-bold transition-all border ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 rounded-xl min-h-[56px] px-1.5 sm:px-5 py-2 text-[11px] sm:text-base font-bold transition-all border ${
                 currentRsvpStatus === 'not_playing'
                   ? 'bg-danger/20 text-danger border-danger shadow-md scale-[1.01]'
                   : 'bg-surface hover:bg-surface-subtle text-foreground border-border hover:border-danger/50'
@@ -514,7 +523,7 @@ export function MatchDetailPage() {
                   }`}
                 />
               )}
-              <span>Can&apos;t Play</span>
+              <span>Can&apos;t Make It</span>
             </button>
           </div>
 
@@ -549,7 +558,7 @@ export function MatchDetailPage() {
 
             {isCutoffPassed && !isCancelled && !isCompleted && (
               <span className="text-xs text-danger font-semibold">
-                RSVP deadline passed · Roster locked
+                Availability deadline passed · Roster locked
               </span>
             )}
           </div>
@@ -964,13 +973,8 @@ export function MatchDetailPage() {
             />
           </FormField>
 
-          <FormField label="Turf Venue" required>
-            <Input
-              value={editTurfName}
-              onChange={(e) => setEditTurfName(e.target.value)}
-              placeholder="e.g. Decathlon Turf Arena, Kalamassery"
-            />
-          </FormField>
+          <GameLocationPicker value={editLocation} onChange={value=>{setEditLocation(value);setEditTurfName(value.name);}} disabled={updateMatchMutation.isPending}/>
+
 
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Match Date" required>

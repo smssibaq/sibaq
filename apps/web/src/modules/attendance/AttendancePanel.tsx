@@ -113,7 +113,7 @@ export function AttendancePanel({
         maybe: 'Marked as Maybe (tentative).',
         not_playing: 'Marked as Unavailable (Out).',
       };
-      toast.success('RSVP Updated', statusLabels[status]);
+      toast.success("Availability Updated", statusLabels[status]);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unable to save your attendance status.';
       if (msg.includes('MATCH_FULL') || msg.includes('Capacity reached')) {
@@ -122,9 +122,9 @@ export function AttendancePanel({
           `All ${maxCapacity} spots are taken. You can join the waitlist below to be auto-promoted!`
         );
       } else if (msg.includes('RSVP_DEADLINE_PASSED')) {
-        toast.error('RSVP Closed', 'The cutoff deadline has passed for this fixture.');
+        toast.error("Availability Closed", 'The cutoff deadline has passed for this fixture.');
       } else {
-        toast.error('RSVP Update Failed', msg);
+        toast.error("Availability Update Failed", msg);
       }
     }
   };
@@ -157,14 +157,14 @@ export function AttendancePanel({
               <Sparkles className="h-3 w-3" />
               <span>Smart Match Headcount</span>
             </div>
-            <CardTitle className="text-xl font-bold">Your Match Availability</CardTitle>
+            <CardTitle className="text-xl font-bold">Are you playing?</CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
               {isCancelled
                 ? 'This fixture has been cancelled.'
                 : isCompleted
                 ? 'This match has already concluded.'
                 : isCutoffPassed
-                ? 'The RSVP deadline has passed. Roster is locked.'
+                ? "The Availability deadline has passed. Roster is locked."
                 : 'Select your status. When capacity is full, additional players join the queue.'}
             </CardDescription>
           </div>
@@ -184,7 +184,7 @@ export function AttendancePanel({
 
             {isLoadingMyAttendance ? (
               <div className="text-xs text-muted-foreground py-2 px-4 animate-pulse">
-                Checking RSVP...
+                Checking Availability...
               </div>
             ) : (
               <AttendanceButton

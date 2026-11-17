@@ -1,3 +1,4 @@
+import { createWithLocation, updateWithLocation, type GameLocation } from '@/components/location/location-service';
 import { supabase } from '@/infrastructure/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/infrastructure/query-keys';
@@ -12,6 +13,7 @@ export interface ExtendedMatchService {
     startsAt: string;
     playersPerTeam: number;
     locationDescription?: string;
+    location?: GameLocation;
     rsvpDeadline?: string | null;
   }): Promise<string>;
   getMatch(matchId: string): Promise<MatchDetail | null>;
@@ -20,6 +22,7 @@ export interface ExtendedMatchService {
   updateMatch(
     matchId: string,
     updates: {
+      location?: GameLocation;
       title?: string;
       turfName?: string;
       startsAt?: string;
@@ -40,6 +43,7 @@ export const matchApi: ExtendedMatchService = {
     startsAt: string;
     playersPerTeam: number;
     locationDescription?: string;
+    location?: GameLocation;
     rsvpDeadline?: string | null;
   }): Promise<string> {
     const finalTurf = params.locationDescription?.trim()
@@ -49,7 +53,7 @@ export const matchApi: ExtendedMatchService = {
     const utcStartsAt = new Date(params.startsAt).toISOString();
     const utcRsvpDeadline = params.rsvpDeadline ? new Date(params.rsvpDeadline).toISOString() : null;
 
-    const { data, error } = await supabase.rpc('create_match', {
+    const data = await createWithLocation('football', {
       p_squad: params.squadId,
       p_title: params.title.trim(),
       p_mode: params.mode,
@@ -57,9 +61,7 @@ export const matchApi: ExtendedMatchService = {
       p_starts_at: utcStartsAt,
       p_players_per_team: params.playersPerTeam,
       p_rsvp_deadline: utcRsvpDeadline,
-    });
-
-    if (error) throw error;
+    }, params.location);
     return data;
   },
 
@@ -248,6 +250,7 @@ export const matchApi: ExtendedMatchService = {
   async updateMatch(
     matchId: string,
     updates: {
+      location?: GameLocation;
       title?: string;
       turfName?: string;
       startsAt?: string;
@@ -273,6 +276,7 @@ export const matchApi: ExtendedMatchService = {
       }
     }
 
+    if(updates.location) return updateWithLocation(matchId,{p_title:title||'',p_turf_name:turfName||'',p_starts_at:startsAt?new Date(startsAt).toISOString():null,p_status:status||'scheduled',p_rsvp_deadline:rsvpDeadline?new Date(rsvpDeadline).toISOString():null},updates.location);
     const { error } = await supabase.rpc('update_match', {
       p_match: matchId,
       p_title: title || '',
@@ -333,6 +337,7 @@ export function useUpdateMatch(matchId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (updates: {
+      location?: GameLocation;
       title?: string;
       turfName?: string;
       startsAt?: string;
@@ -340,6 +345,7 @@ export function useUpdateMatch(matchId: string) {
       rsvpDeadline?: string | null;
     }) => matchApi.updateMatch(matchId, updates),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game-location',matchId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.detail(matchId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
     },
@@ -351,6 +357,7 @@ export function useCancelMatch(matchId: string) {
   return useMutation({
     mutationFn: () => matchApi.cancelMatch(matchId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game-location',matchId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.detail(matchId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
     },

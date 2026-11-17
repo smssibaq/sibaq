@@ -39,7 +39,7 @@ function AmountForm({ initial, count, busy, onSave, onCancel }: {
       const total = basePaise + extraPaise;
       if (basePaise <= 0) throw new Error('Ground or court cost must be greater than zero.');
       if (total > MAX_PAISE) throw new Error('Total must be at most ₹9,99,99,99,999.99.');
-      if (!initial && count === 0) throw new Error('No confirmed players to split with.');
+      if (!initial && count === 0) throw new Error("No players in to split with.");
       const manual = initial?.shares.filter(s => s.is_manual).reduce((sum, s) => sum + toPaise(s.share_amount), 0) ?? 0;
       if (total < manual) throw new Error('Total cannot be less than the fixed manual shares. Reset or edit those shares first.');
       await onSave(toRupees(basePaise), toRupees(extraPaise), description.trim());

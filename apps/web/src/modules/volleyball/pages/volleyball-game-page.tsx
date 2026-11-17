@@ -1,3 +1,4 @@
+import { GameLocationDetails } from '@/components/location/game-location-details';
 import { useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { ArrowLeft, CalendarDays, MapPin, Users } from 'lucide-react';
@@ -113,6 +114,7 @@ export function VolleyballGamePage() {
 
       <VolleyballAttendance game={game} />
       <VolleyballVisualLineup game={game} />
+      <GameLocationDetails gameId={game.game_id} venue={game.venue} canEdit={game.is_organizer} />
       <VolleyballPlayerList players={game.players} currentUserId={user?.id} />
       {!closed && <VolleyballShare title={game.title} code={game.invite_code} />}
 
@@ -145,8 +147,8 @@ export function VolleyballGamePage() {
         title={confirm === 'cancelled' ? 'Cancel this game?' : 'Mark game as completed?'}
         message={
           confirm === 'cancelled'
-            ? 'Players will see the game as cancelled and RSVPs will close.'
-            : 'RSVPs and team changes will be locked.'
+            ? "Players will see the game as cancelled and availability updates will close."
+            : "availability updates and team changes will be locked."
         }
         confirmText={confirm === 'cancelled' ? 'Cancel game' : 'Mark completed'}
         cancelText="Keep open"

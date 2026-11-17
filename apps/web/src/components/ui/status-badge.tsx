@@ -16,8 +16,8 @@ const STATUS_LABELS: Record<string, string> = {
   in_progress: 'Live',
   completed: 'Completed',
   cancelled: 'Cancelled',
-  playing: 'Playing',
-  not_playing: 'Not Playing',
+  playing: "I'm In",
+  not_playing: "Can't Make It",
   maybe: 'Maybe',
 };
 

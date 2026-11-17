@@ -125,7 +125,7 @@ export function MatchesHubPage() {
       {/* Page Header */}
       <PageHeader
         title="Match Center & Fixtures"
-        description="Unified matchday schedule across all your squads. Manage RSVPs, track turf venues, and view formations."
+        description="Unified matchday schedule across all your squads. Manage availability updates, track turf venues, and view formations."
         badge={upcomingMatches.length > 0 ? `${upcomingMatches.length} Upcoming` : 'Fixtures'}
         actions={
           <div className="flex items-center gap-2.5">
@@ -195,7 +195,7 @@ export function MatchesHubPage() {
                   onClick={() => navigate({ to: '/matches/$matchId', params: { matchId: nextUpcomingMatch.id } })}
                   className="bg-primary text-primary-foreground hover:bg-primary-hover text-xs font-bold shadow-sm flex-1 sm:flex-initial justify-center"
                 >
-                  <span>RSVP & Details</span>
+                  <span>Match Details</span>
                   <ArrowRight className="h-3.5 w-3.5 ml-1.5 shrink-0" />
                 </Button>
               </div>
@@ -320,7 +320,7 @@ export function MatchesHubPage() {
           }
           description={
             activeTab === 'upcoming'
-              ? 'Schedule a turf match for your squad to get RSVPs and prepare the tactical formation.'
+              ? "Schedule a turf match for your squad to get availability updates and prepare the tactical formation."
               : activeTab === 'live'
               ? 'No active matches happening right now. Upcoming fixtures will appear here during kickoff.'
               : 'Completed match scores and lineups will be cataloged here.'
@@ -406,7 +406,7 @@ export function MatchesHubPage() {
                       onClick={() => navigate({ to: '/matches/$matchId', params: { matchId: m.id } })}
                       className="w-full text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover h-8 px-2 shadow-sm"
                     >
-                      <span>RSVP</span>
+                      <span>Availability</span>
                       <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Button>
                   </div>

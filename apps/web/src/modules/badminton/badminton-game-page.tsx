@@ -1,3 +1,4 @@
+import { GameLocationDetails } from '@/components/location/game-location-details';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays, Check, HelpCircle, MapPin, Trophy, X, Share2, Users } from 'lucide-react';
@@ -20,9 +21,9 @@ import { BadmintonLineup } from './badminton-lineup';
 import { BadmintonEditGame } from './badminton-edit-game';
 
 const RSVP_OPTIONS = [
-  { value: 'in', label: "I'm in", icon: Check },
+  { value: 'in', label: "I'm In", icon: Check },
   { value: 'maybe', label: 'Maybe', icon: HelpCircle },
-  { value: 'out', label: "Can't play", icon: X },
+  { value: 'out', label: "Can't Make It", icon: X },
 ] as const;
 
 export function BadmintonGamePage({ gameId }: { gameId: string }) {
@@ -47,7 +48,7 @@ export function BadmintonGamePage({ gameId }: { gameId: string }) {
   const rsvp = useMutation({
     mutationFn: (status: BadmintonRsvpStatus) => badmintonApi.setRsvp(gameId, status),
     onSuccess: async () => { await invalidate(); toast.success('Availability updated'); },
-    onError: err => toast.error('RSVP failed', /GAME_FULL/.test(String((err as Error)?.message)) ? 'This game is full.' : normalizeError(err).message),
+    onError: err => toast.error("Availability failed", /GAME_FULL/.test(String((err as Error)?.message)) ? 'This game is full.' : normalizeError(err).message),
   });
   if (isLoading) return <LoadingState message="Loading game..." />;
   if (error || !game) return <ErrorState title="Game not available" message={error ? normalizeError(error).message : 'Game not found.'} />;
@@ -70,8 +71,9 @@ export function BadmintonGamePage({ gameId }: { gameId: string }) {
         <div className="flex flex-wrap gap-2"><BadmintonEditGame game={game} onSaved={invalidate} /><Button variant="outline" onClick={share}><Share2 className="mr-2 h-4 w-4" />Share invite</Button></div>
       </div>
     </div>
+      <GameLocationDetails gameId={game.id} venue={game.venue} canEdit={game.isOrganizer} />
     <Card className="rounded-2xl border-2 border-primary/30"><CardContent className="space-y-4 p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-widest text-primary">Your availability</p><h2 className="mt-1 text-lg font-bold">Ready to take the court?</h2></div><p className="text-2xl font-black text-primary">{confirmed.length}<span className="text-base text-muted-foreground"> / {game.capacity} in</span></p></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-widest text-primary">Are you playing?</p><h2 className="mt-1 text-lg font-bold">Ready to take the court?</h2></div><p className="text-2xl font-black text-primary">{confirmed.length}<span className="text-base text-muted-foreground"> / {game.capacity} in</span></p></div>
       <div role="progressbar" aria-label="Confirmed players" aria-valuenow={confirmed.length} aria-valuemin={0} aria-valuemax={game.capacity} className="h-2 overflow-hidden rounded-full bg-surface-subtle"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, confirmed.length / game.capacity * 100)}%` }} /></div>
       <p className="text-sm text-muted-foreground">{full ? 'All spots filled. See you on court!' : `${game.capacity - confirmed.length} spots remaining`} · {game.players.filter(p => p.status === 'maybe').length} maybe</p>
       {closed ? <p className="text-sm text-muted-foreground">Attendance is closed for this {game.status} game.</p> : <div className="grid grid-cols-3 gap-2">{RSVP_OPTIONS.map(({ value, label, icon: Icon }) => {

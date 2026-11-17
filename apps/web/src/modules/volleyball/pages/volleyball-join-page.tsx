@@ -34,7 +34,7 @@ export function VolleyballJoinPage() {
     mutationFn: volleyballApi.joinByCode,
     onSuccess: (gameId) => {
       queryClient.invalidateQueries({ queryKey: volleyballKeys.list });
-      toast.success('You joined the game', 'Set your RSVP so everyone knows if you are in.');
+      toast.success('You joined the game', "Set your Availability so everyone knows if you are in.");
       go(volleyballPaths.game(gameId));
     },
     onError: (err) => toast.error('Could not join', normalizeError(err).message),

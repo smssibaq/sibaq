@@ -208,7 +208,7 @@ export function DashboardPage() {
         <Card className="border-border bg-surface shadow-card min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-1.5">
             <CardTitle className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-              Confirmed Players
+              Players In
             </CardTitle>
             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success shrink-0 ml-1" />
           </CardHeader>
@@ -217,7 +217,7 @@ export function DashboardPage() {
               {isLoadingMatches ? '...' : totalConfirmedPlayers}
             </div>
             <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 truncate">
-              RSVP Playing for fixtures
+              Availability Playing for fixtures
             </p>
           </CardContent>
         </Card>
@@ -409,7 +409,7 @@ export function DashboardPage() {
                       {isQuorumMet ? (
                         <span className="text-success text-[11px] font-semibold">Quorum Met ·</span>
                       ) : null}
-                      <span>RSVP / Details</span>
+                      <span>Availability / Details</span>
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   </CardContent>

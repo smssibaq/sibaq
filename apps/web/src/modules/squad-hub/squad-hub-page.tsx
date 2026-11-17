@@ -399,7 +399,7 @@ export function SquadHubPage() {
                   className="bg-primary text-primary-foreground font-bold hover:bg-primary-hover shadow-md min-h-[44px]"
                   onClick={() => (window.location.href = `/matches/${liveMatch.id}`)}
                 >
-                  <span>Enter Match & Live RSVP</span>
+                  <span>Enter Match & Live Availability</span>
                   <ArrowRight className="h-4 w-4 ml-1.5" />
                 </Button>
                 <Button
@@ -566,7 +566,7 @@ export function SquadHubPage() {
                               {isQuorumMet ? (
                                 <Badge variant="success" className="text-[10px] px-1.5 py-0">Quorum</Badge>
                               ) : null}
-                              <span>RSVP →</span>
+                              <span>Availability →</span>
                             </div>
                           </div>
                         </CardContent>
