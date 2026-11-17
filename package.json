@@ -1,9 +1,10 @@
 {
-  "name": "buildathon-starter",
+  "name": "kalikkanundo",
   "version": "1.0.0",
   "private": true,
-  "description": "Domain-neutral 3-person 240-minute Buildathon starter template",
+  "description": "Kalikkanundo — turf football squad, match and lineup manager (Next.js landing + Vite web app + Supabase)",
   "scripts": {
+    "setup": "npm install && npm run install:all",
     "install:landing": "npm --prefix apps/landing install",
     "install:web": "npm --prefix apps/web install",
     "install:all": "npm run install:landing && npm run install:web",
@@ -25,5 +26,8 @@
   },
   "devDependencies": {
     "concurrently": "^10.0.7"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

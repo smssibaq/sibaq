@@ -18,12 +18,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: apps/landing/package-lock.json
 
+      # Lockfiles are git-ignored in this repo, so `npm ci` cannot be used.
       - name: Install dependencies
         working-directory: apps/landing
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Typecheck
         working-directory: apps/landing
@@ -47,12 +46,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         working-directory: apps/web
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Typecheck
         working-directory: apps/web

@@ -40,6 +40,9 @@ Thumbs.db
 supabase/.temp/
 supabase/.branches/
 
+# TypeScript incremental build info
+*.tsbuildinfo
+
 # Test coverage
 coverage/
 *.lcov
