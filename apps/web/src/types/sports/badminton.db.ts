@@ -50,6 +50,10 @@ export type BadmintonTables = {
 };
 
 export type BadmintonFunctions = {
+  badminton_update_game: {
+    Args: { p_game: string; p_title: string; p_venue: string; p_starts_at: string };
+    Returns: void;
+  };
   badminton_create_game: {
     Args: {
       p_squad: string;

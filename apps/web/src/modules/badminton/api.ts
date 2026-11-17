@@ -53,6 +53,11 @@ export interface BadmintonGameDetail {
 }
 
 export const badmintonApi = {
+  async updateGame(gameId: string, title: string, venue: string, startsAt: string): Promise<void> {
+    if (!title.trim() || !Number.isFinite(new Date(startsAt).getTime())) throw new Error('Enter a title and valid start time.');
+    const { error } = await supabase.rpc('badminton_update_game', { p_game: gameId, p_title: title.trim(), p_venue: venue.trim(), p_starts_at: new Date(startsAt).toISOString() });
+    if (error) throw error;
+  },
   async listGames(): Promise<BadmintonGameListItem[]> {
     const { data: games, error } = await supabase
       .from('games')
@@ -109,9 +114,10 @@ export const badmintonApi = {
     if (!detail) return null;
 
     const userIds = (rsvps ?? []).map((r) => r.user_id);
-    const { data: profiles } = userIds.length
+    const { data: profiles, error: profileError } = userIds.length
       ? await supabase.from('profiles').select('id, display_name, avatar_url').in('id', userIds)
-      : { data: [] as { id: string; display_name: string | null; avatar_url: string | null }[] };
+      : { data: [] as { id: string; display_name: string | null; avatar_url: string | null }[], error: null };
+    if (profileError) throw profileError;
 
     const players: BadmintonPlayer[] = (rsvps ?? [])
       .slice()
