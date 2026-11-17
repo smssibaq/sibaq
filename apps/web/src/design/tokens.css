@@ -1,0 +1,68 @@
+:root,
+.light {
+  /* 60% Base / Background - Kalikkanundo Clean Light / White Aesthetic */
+  --color-bg: #F8FAFC;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+
+  /* 30% Secondary / Surfaces - Pure White Stadium Containers & Soft Slate */
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F5F9;
+  --color-secondary: #F1F5F9;
+  --color-border: #E2E8F0;
+
+  /* 10% Accent / Primary Actions - Deep Turf Emerald Green */
+  --color-accent: #16A34A;
+  --color-accent-hover: #15803D;
+  --color-accent-foreground: #FFFFFF;
+  --color-focus-ring: #16A34A;
+
+  /* Functional / Semantic */
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-info: #0284C7;
+
+  /* Layout, Spacing, Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows with modern clean depth */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(226, 232, 240, 0.8);
+
+  /* Touch / Accessibility Targets */
+  --min-control-height: 44px;
+}
+
+.dark {
+  /* 60% Base / Background - Kalikkanundo Dark Pitch Aesthetic */
+  --color-bg: #0B1F19;
+  --color-text: #F5F7F4;
+  --color-text-muted: #94A3B8;
+
+  /* 30% Secondary / Surfaces - Modern Dark Green Stadium Containers */
+  --color-surface: #132E26;
+  --color-surface-subtle: #1B3D33;
+  --color-secondary: #1B3D33;
+  --color-border: #234E42;
+
+  /* 10% Accent / Primary Actions - Electric Neon Lime */
+  --color-accent: #B7F34B;
+  --color-accent-hover: #A3DE3D;
+  --color-accent-foreground: #0B1F19;
+  --color-focus-ring: #B7F34B;
+
+  /* Functional / Semantic */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #38BDF8;
+
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(35, 78, 66, 0.5);
+  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(35, 78, 66, 0.6);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(183, 243, 75, 0.2);
+}

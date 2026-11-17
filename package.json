@@ -1,0 +1,29 @@
+{
+  "name": "buildathon-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Domain-neutral 3-person 240-minute Buildathon starter template",
+  "scripts": {
+    "install:landing": "npm --prefix apps/landing install",
+    "install:web": "npm --prefix apps/web install",
+    "install:all": "npm run install:landing && npm run install:web",
+    "dev": "concurrently -k -n \"landing,web\" -c \"cyan,magenta\" \"npm run dev:landing\" \"npm run dev:web\"",
+    "dev:landing": "npm --prefix apps/landing run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:landing": "npm --prefix apps/landing run build",
+    "build:web": "npm --prefix apps/web run build",
+    "build": "npm run build:landing && npm run build:web",
+    "lint:landing": "npm --prefix apps/landing run lint",
+    "lint:web": "npm --prefix apps/web run lint",
+    "lint": "npm run lint:landing && npm run lint:web",
+    "typecheck:landing": "npm --prefix apps/landing run typecheck",
+    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "typecheck": "npm run typecheck:landing && npm run typecheck:web",
+    "test:web": "npm --prefix apps/web run test",
+    "test": "npm run test:web",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}
