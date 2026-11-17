@@ -59,3 +59,4 @@ export function CricketLineupWorkspace({ game }: { game: CricketGameDetail }) {
     </Card>
   );
 }
+

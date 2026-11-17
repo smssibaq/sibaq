@@ -250,3 +250,4 @@ export function CricketTeamManager({ game }: { game: CricketGameDetail }) {
     </Card>
   );
 }
+

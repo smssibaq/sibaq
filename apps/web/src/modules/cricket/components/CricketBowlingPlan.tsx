@@ -268,3 +268,4 @@ export function CricketBowlingPlan({ game }: { game: CricketGameDetail }) {
     </div>
   );
 }
+
