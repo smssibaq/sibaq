@@ -42,6 +42,26 @@ export interface Database {
 
 /** Shared + football tables (platform-owned). Sport tables live in ./sports/*.db.ts */
 type CoreTables = {
+  game_expenses: {
+    Row: {
+      id: string; game_id: string; sport: SportKey; organizer_id: string;
+      base_amount: number; extra_amount: number; total_amount: number;
+      description: string | null; created_at: string; updated_at: string;
+    };
+    Insert: never;
+    Update: never;
+    Relationships: [];
+  };
+  game_expense_shares: {
+    Row: {
+      id: string; expense_id: string; player_id: string;
+      share_amount: number; paid_amount: number; is_manual: boolean;
+      status: 'paid' | 'partial' | 'unpaid'; updated_at: string;
+    };
+    Insert: never;
+    Update: never;
+    Relationships: [];
+  };
   profiles: {
     Row: {
       id: string;
@@ -425,6 +445,30 @@ type CoreTables = {
 
 /** Shared + football RPCs (platform-owned). Sport RPCs live in ./sports/*.db.ts */
 type CoreFunctions = {
+  create_game_expense: {
+    Args: { p_game: string; p_base_amount: number; p_extra_amount?: number; p_description?: string | null };
+    Returns: string;
+  };
+  update_game_expense: {
+    Args: { p_expense: string; p_base_amount: number; p_extra_amount?: number; p_description?: string | null };
+    Returns: void;
+  };
+  resplit_game_expense: {
+    Args: { p_expense: string };
+    Returns: void;
+  };
+  set_expense_share: {
+    Args: { p_expense: string; p_player: string; p_share_amount: number | null };
+    Returns: void;
+  };
+  record_expense_payment: {
+    Args: { p_expense: string; p_player: string; p_paid_amount: number };
+    Returns: void;
+  };
+  get_game_expense_summary: {
+    Args: { p_game: string };
+    Returns: Json;
+  };
   create_squad: {
     Args: { p_name: string; p_description: string | null };
     Returns: string;
@@ -582,4 +626,5 @@ type CoreFunctions = {
     }>;
   };
 };
+
 

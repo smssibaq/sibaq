@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ExpensePanel } from '@/modules/expenses';
 import { LoadingState } from '@/components/common/loading-state';
 import { EmptyState } from '@/components/common/empty-state';
 import { Card } from '@/components/ui/card';
@@ -946,6 +947,8 @@ export function MatchDetailPage() {
       {/* ========================================================================= */}
       {/* DIALOGS: Edit Fixture & Cancel Confirmation                               */}
       {/* ========================================================================= */}
+      <ExpensePanel gameId={match.id} />
+
       <Dialog
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -1027,3 +1030,4 @@ export function MatchDetailPage() {
     </div>
   );
 }
+
