@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { GameLocationDetails } from '@/components/location/game-location-details';
 import { useState, useEffect, useMemo } from 'react';
 import { ExpensePanel } from '@/modules/expenses';
+import { EquipmentPanel } from '@/modules/equipment';
 import { LoadingState } from '@/components/common/loading-state';
 import { EmptyState } from '@/components/common/empty-state';
 import { Card } from '@/components/ui/card';
@@ -952,10 +953,7 @@ export function MatchDetailPage() {
 
       {/* Ratings & match review (shared, appears after kickoff) */}
       {matchId && <RatingsPanel gameId={matchId} />}
-
-      {/* ========================================================================= */}
-      {/* DIALOGS: Edit Fixture & Cancel Confirmation                               */}
-      {/* ========================================================================= */}
+      <EquipmentPanel gameId={match.id} />
       <ExpensePanel gameId={match.id} />
 
       <Dialog

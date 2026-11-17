@@ -16,6 +16,7 @@ import { normalizeError } from '@/lib/errors';
 import { formatDateTime } from '@/lib/dates';
 import type { BadmintonRsvpStatus, BadmintonSide } from '@/types/sports/badminton.db';
 import { RatingsPanel } from '@/modules/ratings';
+import { EquipmentPanel } from '@/modules/equipment';
 import { badmintonApi, badmintonKeys, type BadmintonGameDetail } from './api';
 import { BadmintonLineup } from './badminton-lineup';
 import { BadmintonEditGame } from './badminton-edit-game';
@@ -92,6 +93,7 @@ export function BadmintonGamePage({ gameId }: { gameId: string }) {
     </div>
     <ResultCard key={game.id} game={game} onSaved={invalidate} />
     <RatingsPanel gameId={game.id} />
+    <EquipmentPanel gameId={game.id} />
   </div>;
 }
 

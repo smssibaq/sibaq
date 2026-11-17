@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { ErrorState } from '@/components/common/error-state';
 import { RatingsPanel } from '@/modules/ratings';
 import { ExpensePanel } from '@/modules/expenses';
+import { EquipmentPanel } from '@/modules/equipment';
 import { formatInTimezone } from '@/lib/dates';
 import { cricketErrorMessage, useCricketGame, useSetStatus } from '../api';
 import type { CricketDraftAction, CricketStatus } from '../types';
@@ -44,6 +45,7 @@ export function CricketGamePage({gameId}:{gameId:string}){
     <CricketResult key={gameId} game={game} />
     {!closed && <CricketShare title={game.title} code={game.invite_code} />}
     {canSeeShared && new Date(game.starts_at).getTime()<=now && <RatingsPanel gameId={gameId} />}
+    {canSeeShared && <EquipmentPanel gameId={gameId} />}
     {canSeeShared && <ExpensePanel gameId={gameId} />}
     {!closed && <div className="sticky bottom-0 z-20 rounded-xl border border-border bg-surface/95 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] backdrop-blur">
       {game.is_organizer?draftAction?.dirty?<div className="flex items-center justify-between gap-3"><span className="text-sm">Unsaved lineup changes</span><Button onClick={draftAction.save} isLoading={draftAction.pending}>Save lineup</Button></div>:<a href="#cricket-lineup" className="flex min-h-11 items-center justify-center rounded-md bg-primary px-4 font-bold text-primary-foreground">Manage lineup</a>:<CricketAttendance game={game} compact />}

@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/common/loading-state';
 import { useAuth } from '@/modules/auth/auth-provider';
 import { RatingsPanel } from '@/modules/ratings';
 import { ExpensePanel } from '@/modules/expenses';
+import { EquipmentPanel } from '@/modules/equipment';
 import { formatInTimezone } from '@/lib/dates';
 import { normalizeError } from '@/lib/errors';
 import { useSetGameStatus, useVolleyballGame } from '../hooks';
@@ -133,6 +134,7 @@ export function VolleyballGamePage() {
       )}
 
       <RatingsPanel gameId={gameId} />
+      <EquipmentPanel gameId={gameId} />
       <ExpensePanel gameId={gameId} />
 
       <ConfirmDialog
