@@ -40,9 +40,9 @@ export function BadmintonPlayerMenu({ anchor, name, avatarUrl, current, maybe, d
     (menu.current?.querySelector<HTMLButtonElement>('[role=menuitemradio]:not(:disabled)') ?? menu.current?.querySelector<HTMLButtonElement>('button:not(:disabled)'))?.focus();
     return () => { previous?.focus(); };
   }, []);
-  return createPortal(<div className="fixed inset-0 z-50" onContextMenu={e => e.preventDefault()}>
+  return createPortal(<div className="fixed inset-0 z-[80]" onContextMenu={e => e.preventDefault()}>
     <button type="button" tabIndex={-1} aria-label="Close player menu" className="absolute inset-0" onClick={onClose} />
-    <div ref={menu} role="menu" aria-label={`Manage ${name}`} style={position} className="fixed w-60 max-w-[calc(100vw-24px)] rounded-2xl border border-primary/25 bg-[#142D25] p-2 text-[#F5F7F4] shadow-2xl" onKeyDown={e => {
+    <div ref={menu} role="menu" aria-label={`Manage ${name}`} style={position} className="fixed max-h-[calc(100dvh-24px)] w-60 max-w-[calc(100vw-24px)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[#142D25] p-2 text-[#F5F7F4] shadow-2xl" onKeyDown={e => {
       if (e.key === 'Tab') onClose();
       if (e.key === 'Escape') { e.preventDefault(); onClose(); }
       if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
