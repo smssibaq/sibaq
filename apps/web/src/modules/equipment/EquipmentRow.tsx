@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Check, CheckCircle2, Circle, MoreHorizontal, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle2, Circle, Trash2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Copy, PackagePlus, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { AlertTriangle, PackagePlus, Share2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { supabase } from '@/infrastructure/supabase/client';
