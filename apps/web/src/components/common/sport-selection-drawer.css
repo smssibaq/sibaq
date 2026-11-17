@@ -1,0 +1,11 @@
+.sport-selection-backdrop { animation: sport-selection-fade 180ms ease-out both; }
+.sport-selection-panel { animation: sport-selection-bottom 240ms ease-out both; }
+@keyframes sport-selection-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sport-selection-bottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sport-selection-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@media (min-width: 768px) {
+  .sport-selection-panel { animation-name: sport-selection-right; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sport-selection-backdrop, .sport-selection-panel { animation: none; }
+}

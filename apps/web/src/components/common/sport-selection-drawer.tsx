@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { X, ChevronRight, Sparkles } from 'lucide-react';
@@ -7,6 +8,7 @@ import { squadApi } from '@/modules/squads/api';
 import { queryKeys } from '@/infrastructure/query-keys';
 import { ShuttleIcon } from '@/modules/badminton/icon';
 import { CricketIcon } from '@/modules/cricket/icon';
+import './sport-selection-drawer.css';
 
 // Minimal crisp SVG for Football
 function FootballIcon({ className }: { className?: string }) {
@@ -74,7 +76,7 @@ export function SportSelectionDrawer() {
   const drawerRef = useRef<HTMLDivElement>(null);
 
   // Fetch squads to pass to Football route
-  const { data: squads = [] } = useQuery({
+  const { data: squads = [], isPending: squadsLoading, isError: squadsError, refetch: retrySquads } = useQuery({
     queryKey: queryKeys.squads.mySquads,
     queryFn: () => squadApi.listMySquads(),
     enabled: isOpen,
@@ -88,7 +90,7 @@ export function SportSelectionDrawer() {
       emoji: '⚽',
       name: 'Football',
       tagline: 'Organize a turf match',
-      description: '5v5, 6v6 or 7v7 turf match with pitch formations and squad RSVPs',
+      description: '5v5, 6v6 or 7v7 turf match with pitch formations and your squad',
       icon: FootballIcon,
       accentColor: 'from-emerald-500/20 to-emerald-500/5',
       badge: '5v5 • 7v7 Turf',
@@ -132,24 +134,30 @@ export function SportSelectionDrawer() {
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    drawerRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         closeDrawer();
       }
+      if (e.key === 'Tab') {
+        const buttons = Array.from(drawerRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => { window.removeEventListener('keydown', handleKeyDown); previous?.focus(); };
   }, [isOpen, closeDrawer]);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previous;
     };
   }, [isOpen]);
 
@@ -157,15 +165,19 @@ export function SportSelectionDrawer() {
 
   const handleSelectSport = (sport: SportOption) => {
     closeDrawer();
+    if (sport.id === 'badminton') {
+      navigate({ to: '/badminton', search: { create: true } } as never);
+      return;
+    }
     const targetPath = sport.getPath(firstSquadId);
     navigate({ to: targetPath });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="sport-drawer-title">
+  return createPortal(
+    <div className="fixed inset-0 z-[80] overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="sport-drawer-title" aria-describedby="sport-drawer-description">
       {/* Backdrop Dim Overlay */}
       <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="sport-selection-backdrop fixed inset-0 bg-black/75 backdrop-blur-sm"
         onClick={closeDrawer}
         aria-hidden="true"
       />
@@ -173,11 +185,7 @@ export function SportSelectionDrawer() {
       {/* Drawer Container: Slide from right on desktop, Bottom sheet on mobile */}
       <div
         ref={drawerRef}
-        className="fixed z-50 flex flex-col bg-surface border-border shadow-2xl transition-all duration-300 ease-out
-          /* Desktop Styles: Slide from right */
-          md:inset-y-0 md:right-0 md:w-[420px] md:border-l md:animate-in md:slide-in-from-right md:duration-300
-          /* Mobile Styles: Bottom sheet */
-          inset-x-0 bottom-0 max-h-[90vh] rounded-t-3xl border-t animate-in slide-in-from-bottom duration-300 pb-safe"
+        className="sport-selection-panel fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] flex-col rounded-t-3xl border-t border-[#B7F34B]/20 bg-[#0B1F19] text-[#F5F7F4] shadow-2xl pb-safe md:inset-y-0 md:left-auto md:right-0 md:w-[420px] md:max-h-none md:rounded-none md:border-l md:border-t-0"
       >
         {/* Mobile Drag Handle */}
         <div className="md:hidden flex justify-center pt-3 pb-1">
@@ -194,7 +202,7 @@ export function SportSelectionDrawer() {
             <h2 id="sport-drawer-title" className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
               What are we playing?
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            <p id="sport-drawer-description" className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Choose a sport to schedule your game.
             </p>
           </div>
@@ -210,15 +218,17 @@ export function SportSelectionDrawer() {
         </div>
 
         {/* Sport Cards List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-3">
+          {squadsError && <p role="alert" className="text-sm text-warning">Could not load football squads. <button type="button" className="underline" onClick={() => void retrySquads()}>Retry</button></p>}
           {SPORT_OPTIONS.map((sport) => {
             const Icon = sport.icon;
             return (
               <button
                 key={sport.id}
                 type="button"
+                disabled={sport.id === 'football' && (squadsLoading || squadsError)}
                 onClick={() => handleSelectSport(sport)}
-                className="group relative w-full rounded-2xl border border-border bg-surface p-4 text-left transition-all duration-200 
+                className="group relative w-full rounded-2xl border border-white/10 bg-[#142D25] p-4 text-left transition-all duration-200 disabled:opacity-50
                   hover:border-primary/50 hover:bg-surface-subtle hover:scale-[1.01] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
               >
                 <div className="flex items-start gap-4">
@@ -236,7 +246,7 @@ export function SportSelectionDrawer() {
                         <span>{sport.name}</span>
                         <Icon className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
                       </h3>
-                      <span className="text-[10px] font-bold text-muted-foreground bg-surface-subtle border border-border/80 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="hidden sm:inline-flex text-[10px] font-bold text-muted-foreground bg-surface-subtle border border-border/80 px-2 py-0.5 rounded-full shrink-0">
                         {sport.badge}
                       </span>
                     </div>
@@ -277,6 +287,6 @@ export function SportSelectionDrawer() {
           </p>
         </div>
       </div>
-    </div>
+    </div>, document.body
   );
 }
