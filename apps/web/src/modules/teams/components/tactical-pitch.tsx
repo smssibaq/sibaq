@@ -8,10 +8,12 @@ export interface TacticalPitchProps {
   teamColor?: string;
   className?: string;
   isReadOnly?: boolean;
+  teamId?: string;
+  onPlayerDragStart?: (player: FormationPlayer, event: React.PointerEvent<HTMLElement>) => void;
   onPlayerAction?: (player: FormationPlayer, element: HTMLElement) => void;
 }
 
-export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnly = false, onPlayerAction }: TacticalPitchProps) {
+export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnly = false, onPlayerAction, onPlayerDragStart, teamId }: TacticalPitchProps) {
   const pitchRef = useRef<HTMLDivElement>(null);
 
   const draftPlayers = useFormationStore((s) => s.draftPlayers);
@@ -213,10 +215,12 @@ export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnl
       {/* Main Tactical Pitch Container */}
       <div
         ref={pitchRef}
+        data-lineup-zone={teamId}
+        data-lineup-pitch="true"
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className="relative aspect-[3/4] w-full rounded-2xl border-4 border-emerald-700/60 dark:border-[#234E42] bg-gradient-to-b from-[#15803D] via-[#166534] to-[#14532D] dark:from-[#0F2A22] dark:via-[#0B1F19] dark:to-[#0A1A15] p-3 shadow-2xl overflow-hidden touch-none"
+        className="relative aspect-[3/4] w-full rounded-2xl border-4 border-emerald-700/60 dark:border-[#234E42] bg-gradient-to-b from-[#15803D] via-[#166534] to-[#14532D] dark:from-[#0F2A22] dark:via-[#0B1F19] dark:to-[#0A1A15] p-3 shadow-2xl overflow-hidden touch-pan-y"
         style={{
           boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5)',
         }}
@@ -305,7 +309,7 @@ export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnl
                   isSwapTarget={isSwapTarget}
                   isSelected={isSelected}
                   teamColor={teamColor}
-                  onPointerDown={(e) => handlePointerDown(player, e)}
+                  onPointerDown={(e) => onPlayerDragStart ? onPlayerDragStart(player,e) : handlePointerDown(player, e)}
                   onClick={event => {
                     if (isReadOnly) return;
                     if (onPlayerAction) { onPlayerAction(player, event.currentTarget); return; }

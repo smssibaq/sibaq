@@ -4,7 +4,7 @@ import { Card } from '@/components/ui';
 import type { CricketGameDetail } from '../types';
 import { CricketBattingOrder } from './CricketBattingOrder';
 import { CricketBowlingPlan } from './CricketBowlingPlan';
-import { CricketFieldPositions } from './CricketFieldPositions';
+import { CricketVisualLineup } from './CricketVisualLineup';
 import { CricketSubstituteBench } from './CricketSubstituteBench';
 
 export type LineupSection = 'fielding' | 'batting' | 'bowling' | 'bench';
@@ -51,7 +51,7 @@ export function CricketLineupWorkspace({ game }: { game: CricketGameDetail }) {
 
       {/* Section Content */}
       <div className="pt-2">
-        {activeSection === 'fielding' && <CricketFieldPositions game={game} />}
+        {activeSection === 'fielding' && <CricketVisualLineup game={game} />}
         {activeSection === 'batting' && <CricketBattingOrder game={game} />}
         {activeSection === 'bowling' && <CricketBowlingPlan game={game} />}
         {activeSection === 'bench' && <CricketSubstituteBench game={game} />}

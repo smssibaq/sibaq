@@ -27,6 +27,8 @@ export const volleyballKeys = {
 };
 
 export const volleyballApi = {
+  getLineupLayout: (gameId: string) => callRpc<import('@/components/lineup/sport-lineup-board').LayoutRow[]>('volleyball_get_lineup_layout', { p_game: gameId }),
+  saveLineupLayout: (gameId: string, rows: import('@/components/lineup/sport-lineup-board').LayoutRow[]) => callRpc<void>('volleyball_save_lineup_layout', { p_game: gameId, p_rows: rows }),
   listMyGames: () => callRpc<VolleyballGameSummary[]>('volleyball_list_my_games'),
 
   getGame: (gameId: string) => callRpc<VolleyballGameDetail>('volleyball_get_game', { p_game: gameId }),

@@ -45,6 +45,8 @@ export const cricketKeys = {
 // ---------------------------------------------------------------------------
 
 export const cricketApi = {
+  getLineupLayout: (gameId: string) => callRpc<import('@/components/lineup/sport-lineup-board').LayoutRow[]>('cricket_get_lineup_layout', { p_game: gameId }),
+  saveLineupLayout: (gameId: string, rows: import('@/components/lineup/sport-lineup-board').LayoutRow[]) => callRpc<void>('cricket_save_lineup_layout', { p_game: gameId, p_rows: rows }),
   listMyGames: () => callRpc<CricketGameSummary[]>('cricket_list_my_games'),
 
   getGame: (gameId: string) =>

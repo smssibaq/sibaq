@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react';
 import { useFormationStore } from '../store/use-formation-store';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, UserMinus, Plus, Sparkles } from 'lucide-react';
@@ -9,6 +10,7 @@ export interface SubstitutesBenchProps {
   unassignedSquadMembers?: MatchAttendance[];
   onDeployToPitch?: (player: FormationPlayer | MatchAttendance) => void;
   isReadOnly?: boolean;
+  onPlayerDragStart?: (player: FormationPlayer, event: PointerEvent<HTMLElement>) => void;
   onPlayerAction?: (player: FormationPlayer, element: HTMLElement) => void;
 }
 
@@ -19,6 +21,7 @@ export function SubstitutesBench({
   onDeployToPitch,
   isReadOnly = false,
   onPlayerAction,
+  onPlayerDragStart,
 }: SubstitutesBenchProps) {
   const draftPlayers = useFormationStore((s) => s.draftPlayers);
   const selectedBenchUserId = useFormationStore((s) => s.selectedBenchUserId);
@@ -123,6 +126,8 @@ export function SubstitutesBench({
                 <div
                   role="button"
                   tabIndex={0}
+                  onPointerDown={event => { if (!isReadOnly) onPlayerDragStart?.(player,event); }}
+                  onDragStart={event => event.preventDefault()}
                   onClick={event => onPlayerAction ? onPlayerAction(player, event.currentTarget) : handleBenchPlayerClick(player)}
                   onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); if (onPlayerAction) onPlayerAction(player, event.currentTarget); else handleBenchPlayerClick(player); } }}
                   aria-haspopup="menu"

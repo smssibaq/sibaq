@@ -24,6 +24,8 @@ import { queryKeys } from '@/infrastructure/query-keys';
 import { normalizeError } from '@/lib/errors';
 import { PlayerActionMenu } from '@/components/ui/player-action-menu';
 import { moveFootballPlayer, type FootballDrafts } from '../hooks/football-player-actions';
+import { createPortal } from 'react-dom';
+import { useLineupDrag } from '@/components/lineup/use-lineup-drag';
 import { saveFootballLineups } from '../hooks/save-football-lineups';
 import { ArrowLeft, ShieldCheck, Sparkles, AlertCircle, ShieldAlert } from 'lucide-react';
 
@@ -201,8 +203,40 @@ export function LineupEditorPage() {
     const preserved = Object.fromEntries(Object.entries(next).map(([id, draft]) => [id, { draftPlayers: draft.players, formationName: draft.formation, baseRevision: draft.revision, isDirty: true, selectedFormat: current.selectedFormat }]));
     useFormationStore.setState({ teamDrafts: preserved, selectedTeamId: selectedId, draftPlayers: next[selectedId].players, formationName: next[selectedId].formation, baseRevision: next[selectedId].revision, isDirty: true, selectedPitchUserId: null, selectedBenchUserId: null });
   }
+  const lineupDrag = useLineupDrag((id, x, y) => {
+    if (!isManager || !match || saveMutation.isPending) return;
+    const element = document.elementFromPoint(x,y);
+    const zone = element?.closest<HTMLElement>('[data-lineup-zone]');
+    const target = zone?.dataset.lineupZone;
+    const drafts = captureDrafts();
+    const player = Object.values(drafts).flatMap(d => d.players).find(p => p.userId === id);
+    if (!player || !target || !confirmedPlayers.some(p => p.userId === id)) { toast.error('Invalid drop','Drop on a pitch, team tab or bench.'); return; }
+    try {
+      const next = moveFootballPlayer(drafts,player,target,serverTeams,match.playersPerTeam);
+      const pitch = element?.closest<HTMLElement>('[data-lineup-pitch]');
+      if (pitch && target !== 'bench') {
+        const rect = pitch.getBoundingClientRect();
+        next[target].players = next[target].players.map(p => p.userId === id ? { ...p, coordinate: { x: Math.max(6,Math.min(94,(x-rect.left)/rect.width*100)), y: Math.max(6,Math.min(94,(y-rect.top)/rect.height*100)) } } : p);
+      }
+      updateDrafts(next,target === 'bench' ? undefined : target); setMenuPlayer(null);
+    } catch(error) { toast.error('Cannot drop player',normalizeError(error).message); }
+  });
+  function shuffleTeams() {
+    if (!isManager || !match || saveMutation.isPending) return;
+    const ids = confirmedPlayers.map(p => p.userId);
+    for(let i=ids.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [ids[i],ids[j]]=[ids[j],ids[i]]; }
+    let next = captureDrafts(); for(const id of Object.keys(next)) next[id]={ ...next[id],players: [] };
+    for(let index=0;index<ids.length;index++) {
+      const attendee=confirmedPlayers.find(p=>p.userId===ids[index])!;
+      const team=serverTeams[Math.floor(index/match.playersPerTeam)] ?? serverTeams[0];
+      if(!team) continue;
+      const player: FormationPlayer={ userId: attendee.userId,teamId:team.id,displayName:attendee.profile?.displayName,avatarUrl:attendee.profile?.avatarUrl,positionLabel:'SUB',isSubstitute:true,coordinate:null };
+      next=moveFootballPlayer(next,player,index<serverTeams.length*match.playersPerTeam?team.id:'bench',serverTeams,match.playersPerTeam);
+    }
+    updateDrafts(next);
+  }
   function openPlayerMenu(player: FormationPlayer, element: HTMLElement) {
-    if (!isManager || saveMutation.isPending) return;
+    if (!isManager || saveMutation.isPending || lineupDrag.suppressClick()) return;
     const rect = element.getBoundingClientRect();
     setMenuAnchor({ left: rect.left, top: rect.bottom + 6 }); setMenuPlayer(player);
   }
@@ -302,6 +336,8 @@ export function LineupEditorPage() {
         try { moveFootballPlayer(captureDrafts(), menuPlayer, team.id, serverTeams, match.playersPerTeam); return true; } catch { return false; }
       }} onMove={target => { if (target === 'bench' && !confirmedPlayers.some(p => p.userId === menuPlayer.userId)) { setMenuPlayer(null); return; } const team = serverTeams[target === 'A' ? 0 : 1]; movePlayer(menuPlayer, target === 'bench' || target === 'remove' ? target : team?.id ?? ''); }} onClose={() => setMenuPlayer(null)} />}
 
+      {lineupDrag.drag && createPortal(<div aria-hidden="true" className="pointer-events-none fixed z-[70] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-primary bg-surface p-3 text-xs" style={{ left:lineupDrag.drag.x,top:lineupDrag.drag.y }}>Moving player</div>,document.body)}
+      {isManager && <Button variant="outline" size="sm" disabled={saveMutation.isPending} onClick={shuffleTeams}>Shuffle teams</Button>}
       {/* Main Formation Toolbar */}
       <FormationToolbar
         teams={teams}
@@ -341,19 +377,22 @@ export function LineupEditorPage() {
         {/* Left Column (8 cols): Interactive Football Pitch & Substitutes Bench */}
         <div className="lg:col-span-8 space-y-6">
           <TacticalPitch
+            teamId={activeTeamId}
+            onPlayerDragStart={(player,event) => lineupDrag.start(event,player.userId,isManager && !saveMutation.isPending)}
             onPlayerAction={isManager ? openPlayerMenu : undefined}
             teamColor={activeTeam?.color || '#B7F34B'}
             isReadOnly={!isManager || saveMutation.isPending}
           />
 
-          <SubstitutesBench
+          <div data-lineup-zone="bench" className={lineupDrag.drag ? "rounded-xl ring-2 ring-primary/40" : ""}><SubstitutesBench
             onUnassignPlayer={handleRemovePlayer}
             isRemoving={saveMutation.isPending}
+            onPlayerDragStart={(player,event) => lineupDrag.start(event,player.userId,isManager && !saveMutation.isPending)}
             onPlayerAction={isManager ? openPlayerMenu : undefined}
             onDeployToPitch={player => { const converted = "teamId" in player ? player : { userId: player.userId, teamId: activeTeamId, displayName: player.profile?.displayName, avatarUrl: player.profile?.avatarUrl, coordinate: null, positionLabel: "SUB", isSubstitute: true }; movePlayer(converted, activeTeamId); }}
             unassignedSquadMembers={availableToAssign}
-            isReadOnly={!isManager}
-          />
+            isReadOnly={!isManager || saveMutation.isPending}
+          /></div>
         </div>
 
         {/* Right Column (4 cols): Team Summary Card & Match Attendees Pool */}

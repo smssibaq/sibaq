@@ -14,7 +14,7 @@ import { useSetGameStatus, useVolleyballGame } from '../hooks';
 import { VolleyballAttendance } from '../components/VolleyballAttendance';
 import { VolleyballPlayerList } from '../components/VolleyballPlayerList';
 import { VolleyballShare } from '../components/VolleyballShare';
-import { VolleyballTeamManager } from '../components/VolleyballTeamManager';
+import { VolleyballVisualLineup } from '../components/VolleyballVisualLineup';
 import {
   DISPLAY_STATUS_LABEL,
   deriveDisplayStatus,
@@ -112,7 +112,7 @@ export function VolleyballGamePage() {
       </Card>
 
       <VolleyballAttendance game={game} />
-      <VolleyballTeamManager game={game} />
+      <VolleyballVisualLineup game={game} />
       <VolleyballPlayerList players={game.players} currentUserId={user?.id} />
       {!closed && <VolleyballShare title={game.title} code={game.invite_code} />}
 

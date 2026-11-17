@@ -42,13 +42,14 @@ export const PlayerToken = React.memo(function PlayerToken({
     <div
       role="button"
       tabIndex={0}
+      onDragStart={event => event.preventDefault()}
       onPointerDown={onPointerDown}
       onClick={onClick}
       aria-label={`Actions for ${name}`}
       aria-haspopup="menu"
       onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick?.(event); } }}
       style={style}
-      className={`group relative flex flex-col items-center justify-center select-none cursor-grab active:cursor-grabbing transition-transform duration-150 touch-none ${
+      className={`group relative flex flex-col items-center justify-center select-none cursor-grab active:cursor-grabbing transition-transform duration-150 touch-pan-y ${
         isDragging ? 'scale-110 z-40 cursor-grabbing' : 'z-20 hover:scale-105'
       } ${className}`}
     >

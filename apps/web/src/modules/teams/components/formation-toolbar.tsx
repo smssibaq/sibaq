@@ -55,6 +55,7 @@ export function FormationToolbar({
 
             return (
               <button
+                data-lineup-zone={team.id}
                 key={team.id}
                 type="button"
                 disabled={isSaving}
