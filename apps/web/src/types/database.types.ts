@@ -381,6 +381,7 @@ type CoreTables = {
       role_label: string;
       max_roles: number;
       roles: Json;
+      equipment: Json;
       owner: string;
       game_table: string | null;
       confirmed_players_fn: string | null;
@@ -391,6 +392,25 @@ type CoreTables = {
       is_enabled: boolean;
       sort_order: number;
       created_at: string;
+    };
+    Insert: never;
+    Update: never;
+    Relationships: [];
+  };
+  game_equipment: {
+    Row: {
+      id: string;
+      game_id: string;
+      sport: string;
+      item: string;
+      is_required: boolean;
+      claimed_by: string | null;
+      claimed_at: string | null;
+      is_brought: boolean;
+      note: string | null;
+      created_by: string | null;
+      created_at: string;
+      updated_at: string;
     };
     Insert: never;
     Update: never;
@@ -665,6 +685,27 @@ type CoreFunctions = {
       avg_rating: number;
       rating_count: number;
     }>;
+  };
+  // Shared game equipment (supabase/migrations/20261117172728_game_equipment_core.sql)
+  get_game_equipment: {
+    Args: { p_game: string };
+    Returns: Json;
+  };
+  claim_game_equipment: {
+    Args: { p_item: string; p_claim?: boolean; p_note?: string | null };
+    Returns: Json;
+  };
+  add_game_equipment: {
+    Args: { p_game: string; p_item: string; p_required?: boolean };
+    Returns: Json;
+  };
+  remove_game_equipment: {
+    Args: { p_item: string };
+    Returns: Json;
+  };
+  set_equipment_brought: {
+    Args: { p_item: string; p_brought: boolean };
+    Returns: Json;
   };
 };
 
