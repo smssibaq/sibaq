@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
+import { SquadLogo } from '../squads/squad-logo';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/toast';
 import { squadApi } from '../squads/api';
@@ -231,7 +232,7 @@ export function SquadHubPage() {
                       : 'bg-surface text-foreground border-border hover:border-primary/50'
                   )}
                 >
-                  <Shield className="h-3.5 w-3.5" />
+                  <SquadLogo squadId={sq.id} size="xs" className="border-0" />
                   <span>{sq.name}</span>
                   <span className="font-mono text-[10px] opacity-80">({sq.joinCode})</span>
                 </button>
@@ -245,9 +246,7 @@ export function SquadHubPage() {
           <div className="rounded-2xl border border-border bg-gradient-to-br from-surface via-surface to-surface-subtle p-6 sm:p-8 shadow-modal relative overflow-hidden">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-start sm:items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border-2 border-primary/40 text-primary shadow-md">
-                  <Shield className="h-8 w-8" />
-                </div>
+                <SquadLogo squadId={activeSquad.id} size="lg" className="border-2 shadow-md" />
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
                     <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">

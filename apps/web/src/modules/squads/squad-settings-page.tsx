@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select';
 import { squadApi } from './api';
 import { invitationApi } from '../invitations/api';
 import { useSquadRealtime } from './use-squad-realtime';
+import { SquadLogoUploader } from './squad-logo-uploader';
 import { useAuth } from '../auth/auth-provider';
 import type { SquadDetail, SquadMember } from './types';
 import type { SquadInvitation } from '../invitations/types';
@@ -238,6 +239,17 @@ export function SquadSettingsPage() {
       )}
 
       <div className="max-w-3xl mx-auto space-y-8">
+        {/* 0. Squad logo */}
+        <Card className="border-border bg-surface shadow-card">
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg font-bold">Squad Logo</CardTitle>
+            <CardDescription>Shown on squad cards and headers. Only owners and admins can change it.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SquadLogoUploader squadId={squadId} canEdit={squad.canManage} />
+          </CardContent>
+        </Card>
+
         {/* 1. General Profile Settings */}
         <Card className="border-border bg-surface shadow-card">
           <CardHeader>

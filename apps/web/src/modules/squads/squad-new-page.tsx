@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createSquadSchema, type CreateSquadFormData } from './schema';
@@ -10,11 +10,17 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/ui/form-field';
 import { Shield, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ImageUploader } from '@/components/common/image-uploader';
+import { useToast } from '@/components/ui/toast';
+import { imageErrorMessage, setSquadImage, type PreparedImage } from '@/lib/supabase/image-upload';
 
 export function SquadNewPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [createdSquadId, setCreatedSquadId] = useState<string | null>(null);
+  const [logo, setLogo] = useState<{ image: PreparedImage; url: string } | null>(null);
+  const { toast } = useToast();
+  useEffect(() => () => { if (logo) URL.revokeObjectURL(logo.url); }, [logo]);
 
   const {
     register,
@@ -34,6 +40,13 @@ export function SquadNewPage() {
     try {
       const squadId = await squadApi.createSquad(data.name, data.description);
       setCreatedSquadId(squadId);
+      if (logo) {
+        try {
+          await setSquadImage(squadId, logo.image);
+        } catch (logoError) {
+          toast.error('Squad created, but the logo was not saved', imageErrorMessage(logoError));
+        }
+      }
       window.location.href = `/squads/${squadId}`;
     } catch (err: unknown) {
       setIsSubmitting(false);
@@ -82,6 +95,17 @@ export function SquadNewPage() {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <ImageUploader
+                shape="rounded"
+                noun="logo"
+                deferred
+                canEdit={!isSubmitting}
+                currentUrl={logo?.url}
+                fallback={<Shield className="h-10 w-10" />}
+                onUpload={async (image) => setLogo({ image, url: URL.createObjectURL(image.blob) })}
+                onRemove={logo ? async () => setLogo(null) : undefined}
+              />
+
               <FormField
                 label="Squad Name"
                 htmlFor="name"

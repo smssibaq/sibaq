@@ -6,6 +6,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
+import { SquadLogo } from './squad-logo';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Dialog } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -148,6 +149,7 @@ export function SquadDetailPage() {
     <div className="space-y-8">
       <PageHeader
         title={squad.name}
+        leading={<SquadLogo squadId={squad.id} size="lg" />}
         description={squad.description || 'Kerala turf squad'}
         badge="Squad Hub"
         actions={

@@ -119,6 +119,7 @@ type CoreTables = {
       owner_id: string;
       join_code: string;
       default_sport: SportKey;
+      image_url: string | null;
       created_at: string;
     };
     Insert: {
@@ -638,6 +639,10 @@ type CoreFunctions = {
     Returns: boolean;
   };
   // Shared ratings (supabase/migrations/20261117150833_ratings_core.sql)
+  set_squad_image: {
+    Args: { p_squad: string; p_image_url: string | null };
+    Returns: void;
+  };
   rate_player: {
     Args: { p_game: string; p_player: string; p_rating: number };
     Returns: void;

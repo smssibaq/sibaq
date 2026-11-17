@@ -7,6 +7,8 @@ export interface PageHeaderProps {
   description?: string;
   badge?: string;
   actions?: React.ReactNode;
+  /** Optional element shown before the title (e.g. a logo). */
+  leading?: React.ReactNode;
   className?: string;
 }
 
@@ -15,6 +17,7 @@ export function PageHeader({
   description,
   badge,
   actions,
+  leading,
   className,
 }: PageHeaderProps) {
   return (
@@ -26,6 +29,8 @@ export function PageHeader({
         )
       )}
     >
+      <div className="flex items-center gap-3 min-w-0">
+      {leading}
       <div className="space-y-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground truncate">
@@ -42,6 +47,7 @@ export function PageHeader({
             {description}
           </p>
         )}
+      </div>
       </div>
 
       {actions && (

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from './auth-provider';
+import { AvatarUploader } from '@/modules/profile/components/AvatarUploader';
 import { AboutStep } from '@/modules/profile/components/AboutStep';
 import { SportPicker } from '@/modules/profile/components/SportPicker';
 import { SportPlayStyle } from '@/modules/profile/components/SportPlayStyle';
@@ -42,8 +43,8 @@ export function ProfilePage() {
     <h1 className="text-2xl font-black">Your profile</h1>
     <Card className="space-y-4 p-4 sm:p-6">
       <div className="flex flex-wrap items-center gap-4">
-        <Avatar src={profile.avatar_url} fallback={profile.display_name || 'P'} size="xl" />
-        <div className="min-w-0 flex-1"><h2 className="break-words text-xl font-bold">{profile.display_name || 'Player'}</h2>
+        {profile.is_me ? <AvatarUploader /> : <Avatar src={profile.avatar_url} fallback={profile.display_name || 'P'} size="xl" />}
+        <div className="min-w-0 flex-1 basis-48"><h2 className="break-words text-xl font-bold">{profile.display_name || 'Player'}</h2>
           {profile.home_area && <p className="text-sm text-muted-foreground">{profile.home_area}</p>}
         </div>
         {profile.is_me && <Button variant="outline" onClick={()=>setEditing(true)}>Edit profile</Button>}
