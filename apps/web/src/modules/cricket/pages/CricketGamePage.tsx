@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GameLocationDetails } from '@/components/location/game-location-details';
 import { Badge, Button, Card, ConfirmDialog } from '@/components/ui';
 import { Skeleton } from '@/components/ui/skeleton';
