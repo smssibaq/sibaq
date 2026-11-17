@@ -6,6 +6,8 @@ import { EmptyState } from '@/components/common/empty-state';
 import { ErrorState } from '@/components/common/error-state';
 import { LoadingState } from '@/components/common/loading-state';
 import { useAuth } from '@/modules/auth/auth-provider';
+import { RatingsPanel } from '@/modules/ratings';
+import { ExpensePanel } from '@/modules/expenses';
 import { formatInTimezone } from '@/lib/dates';
 import { normalizeError } from '@/lib/errors';
 import { useSetGameStatus, useVolleyballGame } from '../hooks';
@@ -66,7 +68,7 @@ export function VolleyballGamePage() {
     );
   }
 
-  if (!game) {
+  if (!game || !gameId) {
     return (
       <EmptyState
         title="Game not found"
@@ -127,6 +129,9 @@ export function VolleyballGamePage() {
           </div>
         </Card>
       )}
+
+      <RatingsPanel gameId={gameId} />
+      <ExpensePanel gameId={gameId} />
 
       <ConfirmDialog
         isOpen={confirm !== null}
