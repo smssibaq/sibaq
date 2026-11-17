@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Migration: 20261116000004_turf_xi_core_schema.sql
 -- Description: Core Schema, RLS Policies, and RPC Functions for Turf XI MVP
--- Target Database: Supabase Cloud (project: czhkpkhtpdafiiadvgje, ap-south-1)
+-- Target Database: Supabase Cloud (originally czhkpkhtpdafiiadvgje; replayable on any fresh project)
 -- =============================================================================
 
 -- 1. EXTENSIONS & TYPES
@@ -18,6 +18,21 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- 2.1a Reconcile with the starter profiles table from 20261115000001.
+-- On a fresh project the table above already exists (email/full_name shape),
+-- so "create table if not exists" is a no-op. Add the Turf XI columns explicitly.
+alter table public.profiles add column if not exists display_name text;
+alter table public.profiles add column if not exists preferred_position text;
+alter table public.profiles add column if not exists secondary_position text;
+alter table public.profiles alter column email drop not null;
+
+alter table public.profiles drop constraint if exists profiles_preferred_position_check;
+alter table public.profiles add constraint profiles_preferred_position_check
+  check (preferred_position in ('GK', 'DEF', 'MID', 'ATT') or preferred_position is null);
+alter table public.profiles drop constraint if exists profiles_secondary_position_check;
+alter table public.profiles add constraint profiles_secondary_position_check
+  check (secondary_position in ('GK', 'DEF', 'MID', 'ATT') or secondary_position is null);
 
 -- 2.2 squads
 create table if not exists public.squads (
@@ -131,22 +146,26 @@ alter table public.team_players enable row level security;
 alter table public.squad_audit enable row level security;
 
 -- Profiles: Anyone authenticated can read profiles; users can update their own
+drop policy if exists "Profiles readable by authenticated users" on public.profiles;
 create policy "Profiles readable by authenticated users"
   on public.profiles for select
   to authenticated
   using (true);
 
+drop policy if exists "Users can update their own profile" on public.profiles;
 create policy "Users can update their own profile"
   on public.profiles for update
   to authenticated
   using (auth.uid() = id);
 
+drop policy if exists "Users can insert their own profile" on public.profiles;
 create policy "Users can insert their own profile"
   on public.profiles for insert
   to authenticated
   with check (auth.uid() = id);
 
 -- Squads: Visible to members
+drop policy if exists "Squads visible to members" on public.squads;
 create policy "Squads visible to members"
   on public.squads for select
   to authenticated
@@ -159,6 +178,7 @@ create policy "Squads visible to members"
   );
 
 -- Squad members: Visible to other members of same squad
+drop policy if exists "Squad members visible to squad" on public.squad_members;
 create policy "Squad members visible to squad"
   on public.squad_members for select
   to authenticated
@@ -171,6 +191,7 @@ create policy "Squad members visible to squad"
   );
 
 -- Matches: Visible to squad members
+drop policy if exists "Matches visible to squad members" on public.matches;
 create policy "Matches visible to squad members"
   on public.matches for select
   to authenticated
@@ -184,6 +205,7 @@ create policy "Matches visible to squad members"
   );
 
 -- Teams: Visible to match squad members
+drop policy if exists "Teams visible to match members" on public.teams;
 create policy "Teams visible to match members"
   on public.teams for select
   to authenticated
@@ -198,6 +220,7 @@ create policy "Teams visible to match members"
   );
 
 -- Team players: Visible to match squad members
+drop policy if exists "Team players visible to match members" on public.team_players;
 create policy "Team players visible to match members"
   on public.team_players for select
   to authenticated
@@ -212,6 +235,7 @@ create policy "Team players visible to match members"
   );
 
 -- Match attendance: Visible to match squad members
+drop policy if exists "Match attendance visible to match members" on public.match_attendance;
 create policy "Match attendance visible to match members"
   on public.match_attendance for select
   to authenticated

@@ -3,7 +3,7 @@
 
 create table if not exists public.sample_items (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade not null default (select auth.uid()),
+  owner_id uuid references auth.users(id) on delete cascade not null default auth.uid(),
   title text not null check (char_length(trim(title)) >= 1),
   description text,
   status text not null check (status in ('draft', 'active', 'archived')) default 'draft',
