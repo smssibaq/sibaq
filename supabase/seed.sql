@@ -21,8 +21,8 @@ BEGIN
 
   IF v_user_id IS NOT NULL THEN
     -- Ensure user has a profile
-    INSERT INTO public.profiles (id, email, full_name)
-    VALUES (v_user_id, 'demo@example.com', 'Demo Engineer')
+    INSERT INTO public.profiles (id, email, full_name, display_name)
+    VALUES (v_user_id, 'demo@example.com', 'Demo Engineer', 'Demo Engineer')
     ON CONFLICT (id) DO NOTHING;
 
     -- Ensure user has a role

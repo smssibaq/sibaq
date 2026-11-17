@@ -2,7 +2,7 @@
 -- Script: supabase/flush_test_data.sql
 -- Description: Flushes test data across all Turf XI transactional tables.
 -- Safe Mode: Retains auth.users and public.profiles so developer accounts remain valid.
--- Target: Supabase Cloud SQL Editor (Project: czhkpkhtpdafiiadvgje)
+-- Target: Supabase Cloud SQL Editor (Project: ctbpkaqyddceacjlujpi)
 -- =============================================================================
 
 BEGIN;
