@@ -1,6 +1,6 @@
 export type CricketAttendance = 'playing' | 'maybe' | 'not_playing';
 export type CricketSide = 'A' | 'B';
-export type CricketStatus = 'scheduled' | 'completed' | 'cancelled';
+export type CricketStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface CricketGameSummary {
   game_id: string;

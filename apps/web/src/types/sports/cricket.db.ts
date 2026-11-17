@@ -7,7 +7,7 @@
 
 export type CricketAttendance = 'playing' | 'maybe' | 'not_playing';
 export type CricketSide = 'A' | 'B';
-export type CricketStatus = 'scheduled' | 'completed' | 'cancelled';
+export type CricketStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 export type CricketPlayersPerSide = 5 | 6 | 7 | 8 | 11;
 
 export type CricketTables = {
