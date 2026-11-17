@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Team, MatchAttendance, PitchCoordinate } from '../types';
+import type { Team, MatchAttendance, PitchCoordinate, FormationPlayer } from '../types';
 import { useFormationStore } from '../store/use-formation-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ export interface TeamAssignmentPanelProps {
   ) => void;
   isAssigning?: boolean;
   isReadOnly?: boolean;
+  onPlayerAction?: (player: FormationPlayer, element: HTMLElement) => void;
 }
 
 export function TeamAssignmentPanel({
@@ -26,6 +27,7 @@ export function TeamAssignmentPanel({
   onAssignPlayer,
   isAssigning = false,
   isReadOnly = false,
+  onPlayerAction,
 }: TeamAssignmentPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -94,9 +96,9 @@ export function TeamAssignmentPanel({
           ) : confirmedAttendance.length === 0 ? (
             <>
               <Users className="h-5 w-5 text-primary mx-auto mb-1.5" />
-              <p className="font-semibold text-foreground">No Squad Members Found</p>
+              <p className="font-semibold text-foreground">No Confirmed Players</p>
               <p className="text-[11px] mt-0.5">
-                Add active members to your squad or collect match RSVPs to populate the pool.
+                Players appear here after responding Playing for this match.
               </p>
             </>
           ) : (
@@ -131,7 +133,7 @@ export function TeamAssignmentPanel({
                 className="flex flex-col p-3 rounded-lg border border-border bg-surface-subtle/60 hover:bg-surface-subtle transition-colors gap-2.5"
               >
                 {/* Top Row: Avatar + Full Name + Status / Position */}
-                <div className="flex items-center justify-between gap-2 min-w-0">
+                <div role="button" tabIndex={isReadOnly ? -1 : 0} aria-haspopup="menu" onClick={event => { if (!isReadOnly && onPlayerAction) onPlayerAction({ userId: att.userId, teamId: '', displayName: name, avatarUrl: att.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, event.currentTarget); }} onKeyDown={event => { if (!isReadOnly && onPlayerAction && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onPlayerAction({ userId: att.userId, teamId: '', displayName: name, avatarUrl: att.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, event.currentTarget); } }} className="flex items-center justify-between gap-2 min-w-0">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface border border-border text-xs font-bold text-foreground">
                       {att.profile?.avatarUrl ? (

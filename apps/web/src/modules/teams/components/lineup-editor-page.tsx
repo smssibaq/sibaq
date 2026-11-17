@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useRef, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/common/page-header';
 import { LoadingState } from '@/components/common/loading-state';
 import { ErrorState } from '@/components/common/error-state';
@@ -13,15 +13,18 @@ import { SubstitutesBench } from './substitutes-bench';
 import { TeamAssignmentPanel } from './team-assignment-panel';
 import {
   useTeamLineup,
-  useSaveFormationMutation,
-  useAssignPlayerMutation,
-  useRemovePlayerMutation,
 } from '../hooks/use-team-lineup';
 import { useLineupRealtime } from '../hooks/use-lineup-realtime';
 import { useFormationStore } from '../store/use-formation-store';
 import { useAuth } from '@/modules/auth/auth-provider';
 import { squadApi } from '@/modules/squads/api';
-import type { PitchCoordinate } from '../types';
+import type { FormationPlayer } from '../types';
+import { attendanceApi } from '@/modules/attendance/api';
+import { queryKeys } from '@/infrastructure/query-keys';
+import { normalizeError } from '@/lib/errors';
+import { PlayerActionMenu } from '@/components/ui/player-action-menu';
+import { moveFootballPlayer, type FootballDrafts } from '../hooks/football-player-actions';
+import { saveFootballLineups } from '../hooks/save-football-lineups';
 import { ArrowLeft, ShieldCheck, Sparkles, AlertCircle, ShieldAlert } from 'lucide-react';
 
 export function LineupEditorPage() {
@@ -34,10 +37,21 @@ export function LineupEditorPage() {
   const { user, role: appRole } = useAuth();
 
   // TanStack Query & Mutation Hooks
-  const { match, teams, confirmedPlayers, isLoading, isError, error, refetch } = useTeamLineup(matchId);
-  const saveMutation = useSaveFormationMutation(matchId);
-  const assignMutation = useAssignPlayerMutation(matchId);
-  const removeMutation = useRemovePlayerMutation(matchId);
+  const { match, teams: serverTeams, confirmedPlayers, isLoading, isError, error, refetch } = useTeamLineup(matchId);
+  const queryClient = useQueryClient();
+  const [menuPlayer, setMenuPlayer] = useState<FormationPlayer | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState({ left: 12, top: 12 });
+  const { data: attendance = [] } = useQuery({ queryKey: queryKeys.matches.attendance(matchId), queryFn: () => attendanceApi.listAttendance(matchId), enabled: Boolean(matchId) });
+  const saveMutation = useMutation({
+    mutationFn: (drafts: FootballDrafts) => saveFootballLineups(matchId, drafts),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.teams.byMatch(matchId) });
+      lastHydratedKeyRef.current = '';
+      useFormationStore.setState({ isDirty: false, teamDrafts: {}, validationError: null });
+      toast.success('Lineup saved', 'Both teams and benches are saved.');
+    },
+    onError: error => toast.error('Could not save lineup', normalizeError(error).message),
+  });
 
   // Realtime live synchronization
   useLineupRealtime({ matchId, enabled: Boolean(matchId) });
@@ -66,6 +80,9 @@ export function LineupEditorPage() {
   const draftPlayers = useFormationStore((s) => s.draftPlayers);
   const validationError = useFormationStore((s) => s.validationError);
   const clearValidationError = useFormationStore((s) => s.clearValidationError);
+
+  const teamDrafts = useFormationStore(s => s.teamDrafts);
+  const teams = useMemo(() => serverTeams.map(team => ({ ...team, players: team.id === selectedTeamId ? draftPlayers : teamDrafts[team.id]?.draftPlayers ?? team.players })), [serverTeams, selectedTeamId, draftPlayers, teamDrafts]);
 
   // Find active team
   const activeTeam = teams.find((t) => t.id === selectedTeamId) || teams[0];
@@ -119,7 +136,7 @@ export function LineupEditorPage() {
 
     if ((!isDirty || isFormatMismatched) && lastHydratedKeyRef.current !== currentKey) {
       lastHydratedKeyRef.current = currentKey;
-      hydrateFromServer(activeTeam, playersPerTeam, confirmedPlayers);
+      hydrateFromServer(serverTeams.find(t => t.id === activeTeam.id) ?? activeTeam, playersPerTeam, confirmedPlayers);
     }
   }, [
     isLoading,
@@ -134,6 +151,7 @@ export function LineupEditorPage() {
     activeTeam,
     confirmedPlayers,
     hydrateFromServer,
+    serverTeams,
   ]);
 
   // Strict Team Membership Isolation: Track players assigned to other teams
@@ -167,66 +185,60 @@ export function LineupEditorPage() {
     useFormationStore.getState().autoFillSquad(availableToAssign);
   }, [activeTeam, availableToAssign]);
 
-  // Handle Save
-  const handleSave = useCallback(async () => {
-    if (!activeTeam) return;
-
-    if (!isManager) {
-      toast.error(
-        'Permission Denied',
-        'Only squad owners and administrators are authorized to save match formations.'
-      );
-      return;
-    }
-
-    const currentDraft = useFormationStore.getState().draftPlayers;
-    const currentFormation = useFormationStore.getState().formationName;
-    const currentRevision = useFormationStore.getState().baseRevision;
-
-    const positions = currentDraft.map((p) => ({
-      userId: p.userId,
-      positionLabel: p.positionLabel,
-      isSubstitute: p.isSubstitute,
-      pitchX: p.coordinate ? p.coordinate.x : null,
-      pitchY: p.coordinate ? p.coordinate.y : null,
+  function captureDrafts(): FootballDrafts {
+    const current = useFormationStore.getState();
+    return Object.fromEntries(serverTeams.map(team => {
+      const draft = current.teamDrafts[team.id];
+      return [team.id, team.id === current.selectedTeamId
+        ? { players: current.draftPlayers, formation: current.formationName, revision: current.baseRevision }
+        : { players: draft?.draftPlayers ?? team.players ?? [], formation: draft?.formationName ?? team.formation, revision: draft?.baseRevision ?? team.revision }];
     }));
-
-    await saveMutation.mutateAsync({
-      teamId: activeTeam.id,
-      formation: currentFormation,
-      expectedRevision: currentRevision,
-      positions,
-    });
-  }, [activeTeam, isManager, saveMutation, toast]);
-
-  // Handle Player Assignment (assigned as substitute first to bypass coordinate check)
-  const handleAssignPlayer = useCallback(
-    async (
-      teamId: string,
-      userId: string,
-      position = 'SUB',
-      isSubstitute = true,
-      coordinate: PitchCoordinate | null = null
-    ) => {
-      // Remove from any other team drafts immediately
-      useFormationStore.getState().removePlayerFromOtherDrafts(userId, teamId);
-      await assignMutation.mutateAsync({ teamId, userId, position, isSubstitute, coordinate });
-    },
-    [assignMutation]
-  );
-
-  // Handle Player Removal
-  const handleRemovePlayer = useCallback(
-    async (userId: string) => {
-      useFormationStore.getState().removePlayerFromOtherDrafts(userId, '');
-      const state = useFormationStore.getState();
-      useFormationStore.setState({
-        draftPlayers: state.draftPlayers.filter((p) => p.userId !== userId),
-      });
-      await removeMutation.mutateAsync(userId);
-    },
-    [removeMutation]
-  );
+  }
+  function updateDrafts(next: FootballDrafts, targetId?: string) {
+    const current = useFormationStore.getState();
+    const selectedId = targetId ?? current.selectedTeamId ?? serverTeams[0]?.id;
+    if (!selectedId || !next[selectedId]) return;
+    const preserved = Object.fromEntries(Object.entries(next).map(([id, draft]) => [id, { draftPlayers: draft.players, formationName: draft.formation, baseRevision: draft.revision, isDirty: true, selectedFormat: current.selectedFormat }]));
+    useFormationStore.setState({ teamDrafts: preserved, selectedTeamId: selectedId, draftPlayers: next[selectedId].players, formationName: next[selectedId].formation, baseRevision: next[selectedId].revision, isDirty: true, selectedPitchUserId: null, selectedBenchUserId: null });
+  }
+  function openPlayerMenu(player: FormationPlayer, element: HTMLElement) {
+    if (!isManager || saveMutation.isPending) return;
+    const rect = element.getBoundingClientRect();
+    setMenuAnchor({ left: rect.left, top: rect.bottom + 6 }); setMenuPlayer(player);
+  }
+  function movePlayer(player: FormationPlayer, target: string) {
+    if (!isManager || !match || saveMutation.isPending) return;
+    if (!confirmedPlayers.some(p => p.userId === player.userId)) { toast.error('RSVP required', 'Only Playing players can join active teams.'); return; }
+    try {
+      updateDrafts(moveFootballPlayer(captureDrafts(), player, target, serverTeams, match.playersPerTeam), target === 'bench' || target === 'remove' ? undefined : target);
+      setMenuPlayer(null);
+    } catch (error) { toast.error('Cannot move player', normalizeError(error).message); }
+  }
+  async function handleSave() {
+    if (!isManager || !match || saveMutation.isPending) return;
+    const drafts = captureDrafts();
+    const eligible = new Set(confirmedPlayers.map(p => p.userId));
+    for (const draft of Object.values(drafts)) draft.players = draft.players.filter(p => eligible.has(p.userId));
+    try { await saveMutation.mutateAsync(drafts); } catch { /* Mutation displays the error and preserves drafts. */ }
+  }
+  function handleAssignPlayer(teamId: string, userId: string) {
+    const attendee = confirmedPlayers.find(p => p.userId === userId);
+    if (!attendee) return;
+    movePlayer({ userId, teamId: activeTeamId, displayName: attendee.profile?.displayName, avatarUrl: attendee.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, teamId);
+  }
+  function handleRemovePlayer(userId: string) {
+    const player = draftPlayers.find(p => p.userId === userId);
+    if (player) movePlayer(player, 'remove');
+  }
+  // Attendance invalidation removes only ineligible assignments, keeping all other local edits.
+  const eligibilityKey = JSON.stringify(confirmedPlayers.map(p => p.userId).sort());
+  useEffect(() => {
+    if (isLoading) return;
+    const eligible = new Set<string>(JSON.parse(eligibilityKey));
+    const current = useFormationStore.getState();
+    const invalid = current.draftPlayers.some(p => !eligible.has(p.userId)) || Object.values(current.teamDrafts).some(d => d.draftPlayers.some(p => !eligible.has(p.userId)));
+    if (invalid) useFormationStore.setState({ draftPlayers: current.draftPlayers.filter(p => eligible.has(p.userId)), teamDrafts: Object.fromEntries(Object.entries(current.teamDrafts).map(([id, d]) => [id, { ...d, draftPlayers: d.draftPlayers.filter(p => eligible.has(p.userId)) }])), isDirty: isManager || current.isDirty });
+  }, [eligibilityKey, isLoading, isManager]);
 
   if (isLoading) {
     return (
@@ -281,9 +293,19 @@ export function LineupEditorPage() {
         </div>
       )}
 
+      {attendance.some(p => p.status === 'maybe') && <Card className="p-4 space-y-2"><h3 className="text-sm font-bold">Provisional bench ? Maybe</h3>{attendance.filter(p => p.status === 'maybe').map(p => <button type="button" key={p.userId} disabled={!isManager} onClick={event => openPlayerMenu({ userId: p.userId, teamId: activeTeamId, displayName: p.profile?.displayName, avatarUrl: p.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, event.currentTarget)} className="flex min-h-11 w-full items-center justify-between rounded-lg border border-border px-3 text-sm"><span>{p.profile?.displayName || 'Player'}</span><Badge variant="warning">Maybe</Badge></button>)}</Card>}
+      {menuPlayer && isManager && <PlayerActionMenu anchor={menuAnchor} name={menuPlayer.displayName || 'Player'} hasTeamB={serverTeams.length > 1} current={!menuPlayer.teamId ? null : menuPlayer.isSubstitute ? 'bench' : serverTeams[0]?.id === menuPlayer.teamId ? 'A' : 'B'} maybe={!confirmedPlayers.some(p => p.userId === menuPlayer.userId)} disabled={saveMutation.isPending} canMove={target => {
+        if (!confirmedPlayers.some(p => p.userId === menuPlayer.userId)) return target === 'bench';
+        if (target === 'bench' || target === 'remove') return true;
+        const team = serverTeams[target === 'A' ? 0 : 1];
+        if (!team || !match) return false;
+        try { moveFootballPlayer(captureDrafts(), menuPlayer, team.id, serverTeams, match.playersPerTeam); return true; } catch { return false; }
+      }} onMove={target => { if (target === 'bench' && !confirmedPlayers.some(p => p.userId === menuPlayer.userId)) { setMenuPlayer(null); return; } const team = serverTeams[target === 'A' ? 0 : 1]; movePlayer(menuPlayer, target === 'bench' || target === 'remove' ? target : team?.id ?? ''); }} onClose={() => setMenuPlayer(null)} />}
+
       {/* Main Formation Toolbar */}
       <FormationToolbar
         teams={teams}
+        onReset={() => { lastHydratedKeyRef.current = ''; useFormationStore.setState({ teamDrafts: {}, isDirty: false }); }}
         onSave={handleSave}
         isSaving={saveMutation.isPending}
         onAutoFillSquad={handleAutoFillSquad}
@@ -293,7 +315,7 @@ export function LineupEditorPage() {
       />
 
       {/* Validation Message Banner (Goalkeeper & Tactical rules) */}
-      {Boolean(validationError || saveMutation.error || assignMutation.error) && (
+      {Boolean(validationError || saveMutation.error) && (
         <div className="flex items-center justify-between p-3.5 rounded-xl border border-warning/50 bg-warning/10 text-warning text-xs font-semibold shadow-md animate-in fade-in slide-in-from-top-1">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 text-warning" />
@@ -301,8 +323,6 @@ export function LineupEditorPage() {
               {validationError ||
                 (saveMutation.error instanceof Error
                   ? saveMutation.error.message
-                  : assignMutation.error instanceof Error
-                  ? assignMutation.error.message
                   : 'Action could not be completed.')}
             </span>
           </div>
@@ -321,13 +341,16 @@ export function LineupEditorPage() {
         {/* Left Column (8 cols): Interactive Football Pitch & Substitutes Bench */}
         <div className="lg:col-span-8 space-y-6">
           <TacticalPitch
+            onPlayerAction={isManager ? openPlayerMenu : undefined}
             teamColor={activeTeam?.color || '#B7F34B'}
-            isReadOnly={!isManager}
+            isReadOnly={!isManager || saveMutation.isPending}
           />
 
           <SubstitutesBench
             onUnassignPlayer={handleRemovePlayer}
-            isRemoving={removeMutation.isPending}
+            isRemoving={saveMutation.isPending}
+            onPlayerAction={isManager ? openPlayerMenu : undefined}
+            onDeployToPitch={player => { const converted = "teamId" in player ? player : { userId: player.userId, teamId: activeTeamId, displayName: player.profile?.displayName, avatarUrl: player.profile?.avatarUrl, coordinate: null, positionLabel: "SUB", isSubstitute: true }; movePlayer(converted, activeTeamId); }}
             unassignedSquadMembers={availableToAssign}
             isReadOnly={!isManager}
           />
@@ -387,8 +410,9 @@ export function LineupEditorPage() {
           <TeamAssignmentPanel
             teams={teams}
             confirmedAttendance={confirmedPlayers}
+            onPlayerAction={isManager ? openPlayerMenu : undefined}
             onAssignPlayer={handleAssignPlayer}
-            isAssigning={assignMutation.isPending}
+            isAssigning={saveMutation.isPending}
             isReadOnly={!isManager}
           />
         </div>

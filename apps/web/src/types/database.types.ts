@@ -557,6 +557,7 @@ type CoreFunctions = {
     Args: { p_match: string; p_user: string };
     Returns: void;
   };
+  football_save_lineups: { Args: { p_match: string; p_teams: Json }; Returns: Json };
   save_team_formation: {
     Args: {
       p_team: string;

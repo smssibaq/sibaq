@@ -21,6 +21,7 @@ export interface FormationEditorState {
   teamDrafts: Record<
     string,
     {
+      baseRevision?: number;
       draftPlayers: FormationPlayer[];
       formationName: string;
       isDirty: boolean;
@@ -154,89 +155,12 @@ export const useFormationStore = create<FormationEditorState>((set, get) => ({
       }
     }
 
-    const targetStarters = format === '5v5' ? 5 : format === '6v6' ? 6 : 7;
-
-    // Find best preset strictly matching this format
     const activePreset = findPresetForFormat(format, team.formation);
-    const effectiveFormation = activePreset.name;
-
-    const teamPlayers = team.players || [];
-    let processedPlayers: FormationPlayer[] = [];
-    let initialDirty = false;
-
-    if (teamPlayers.length > 0) {
-      // 1. Team already has saved players in DB: Preserve them while enforcing starter quota
-      const rawPlayers: FormationPlayer[] = [...teamPlayers];
-      const explicitStarters = rawPlayers.filter((p) => !p.isSubstitute && p.coordinate !== null);
-      const unplacedOrSubs = rawPlayers.filter((p) => p.isSubstitute || p.coordinate === null);
-
-      let starters: FormationPlayer[] = [];
-      let overflowToBench: FormationPlayer[] = [];
-      if (explicitStarters.length > targetStarters) {
-        const gk = explicitStarters.find((p) => p.positionLabel?.toUpperCase() === 'GK');
-        const outfielders = explicitStarters.filter((p) => p !== gk);
-        const retainedOutfield = outfielders.slice(0, targetStarters - (gk ? 1 : 0));
-        starters = gk ? [gk, ...retainedOutfield] : outfielders.slice(0, targetStarters);
-        const overflow = explicitStarters.filter((p) => !starters.includes(p));
-        overflowToBench = overflow.map((p) => ({
-          ...p,
-          isSubstitute: true,
-          coordinate: null,
-          positionLabel: p.positionLabel === 'GK' ? 'GK' : 'SUB',
-        }));
-      } else {
-        starters = explicitStarters;
-      }
-
-      const allSubs = [...overflowToBench, ...unplacedOrSubs];
-      const availableSlots = activePreset.positions.filter((slot) => {
-        return !starters.some((st) => {
-          if (!st.coordinate) return false;
-          const dx = st.coordinate.x - slot.x;
-          const dy = st.coordinate.y - slot.y;
-          return Math.hypot(dx, dy) < 10;
-        });
-      });
-
-      let slotIdx = 0;
-      processedPlayers = [
-        ...starters,
-        ...allSubs.map((player) => {
-          if (player.coordinate !== null && player.isSubstitute) {
-            return player;
-          }
-          if (starters.length + slotIdx < targetStarters && slotIdx < availableSlots.length) {
-            const slot = availableSlots[slotIdx++];
-            return {
-              ...player,
-              isSubstitute: false,
-              coordinate: { x: slot.x, y: slot.y },
-              positionLabel: slot.label,
-            };
-          }
-          return {
-            ...player,
-            isSubstitute: true,
-            coordinate: null,
-            positionLabel: player.positionLabel === 'SUB' ? 'SUB' : player.positionLabel,
-          };
-        }),
-      ];
-    } else if (squadPlayers && squadPlayers.length > 0) {
-      // 2. Initial blank state: Auto-populate with confirmed squad members by preferredPosition & confirmation order
-      // Exclude players already placed in other teams' drafts
-      const otherTeamAssigned = new Set<string>();
-      const existingDrafts = get().teamDrafts;
-      Object.keys(existingDrafts).forEach((tId) => {
-        if (tId !== team.id) {
-          existingDrafts[tId]?.draftPlayers.forEach((p) => otherTeamAssigned.add(p.userId));
-        }
-      });
-
-      const availableSquad = squadPlayers.filter((sp) => !otherTeamAssigned.has(sp.userId));
-      processedPlayers = autoPopulateSquadLineup(availableSquad, activePreset, team.id);
-      initialDirty = processedPlayers.length > 0;
-    }
+    const effectiveFormation = team.formation || activePreset.name;
+    const eligible = squadPlayers ? new Set(squadPlayers.filter(p => p.status === 'playing').map(p => p.userId)) : null;
+    const teamPlayers = (team.players || []).filter(p => !eligible || eligible.has(p.userId));
+    const processedPlayers = teamPlayers.map(p => ({ ...p, coordinate: p.coordinate ? { ...p.coordinate } : null }));
+    const initialDirty = false;
 
     // Deep equality check against current draftPlayers to break re-render loops
     const current = get();
@@ -319,6 +243,7 @@ export const useFormationStore = create<FormationEditorState>((set, get) => ({
     const updatedDrafts = { ...state.teamDrafts };
     if (prevTeamId && state.isDirty) {
       updatedDrafts[prevTeamId] = {
+        baseRevision: state.baseRevision,
         draftPlayers: state.draftPlayers,
         formationName: state.formationName,
         isDirty: state.isDirty,
@@ -349,7 +274,7 @@ export const useFormationStore = create<FormationEditorState>((set, get) => ({
         isDirty: saved.isDirty,
         selectedFormat: saved.selectedFormat,
         teamDrafts: updatedDrafts,
-        baseRevision: team ? team.revision : state.baseRevision,
+        baseRevision: saved.baseRevision ?? team?.revision ?? state.baseRevision,
         activeDragUserId: null,
         swapTargetUserId: null,
         selectedBenchUserId: null,

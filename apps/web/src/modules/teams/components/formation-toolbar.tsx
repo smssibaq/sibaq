@@ -8,6 +8,7 @@ import type { Team, MatchAttendance } from '../types';
 export interface FormationToolbarProps {
   teams: Team[];
   onSave: () => void;
+  onReset?: () => void;
   isSaving: boolean;
   onAutoFillSquad?: () => void;
   squadPlayerCount?: number;
@@ -18,6 +19,7 @@ export interface FormationToolbarProps {
 export function FormationToolbar({
   teams,
   onSave,
+  onReset,
   isSaving,
   onAutoFillSquad,
   squadPlayerCount = 0,
@@ -55,6 +57,7 @@ export function FormationToolbar({
               <button
                 key={team.id}
                 type="button"
+                disabled={isSaving}
                 onClick={() => setSelectedTeamId(team.id, team, squadPlayers)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                   isSelected
@@ -86,6 +89,7 @@ export function FormationToolbar({
               type="button"
               variant="outline"
               size="sm"
+              disabled={isSaving}
               onClick={onAutoFillSquad}
               className="text-xs border-primary/50 text-primary hover:bg-primary/10 font-bold"
             >
@@ -99,7 +103,7 @@ export function FormationToolbar({
               type="button"
               variant="outline"
               size="sm"
-              onClick={resetDraft}
+              onClick={onReset ?? resetDraft}
               disabled={isSaving}
               className="text-xs border-border text-foreground hover:bg-surface-subtle"
             >
@@ -189,7 +193,7 @@ export function FormationToolbar({
               <button
                 key={preset.id}
                 type="button"
-                disabled={isReadOnly}
+                disabled={isReadOnly || isSaving}
                 onClick={() => applyFormationPreset(preset)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isCurrent

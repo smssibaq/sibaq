@@ -8,9 +8,10 @@ export interface TacticalPitchProps {
   teamColor?: string;
   className?: string;
   isReadOnly?: boolean;
+  onPlayerAction?: (player: FormationPlayer, element: HTMLElement) => void;
 }
 
-export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnly = false }: TacticalPitchProps) {
+export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnly = false, onPlayerAction }: TacticalPitchProps) {
   const pitchRef = useRef<HTMLDivElement>(null);
 
   const draftPlayers = useFormationStore((s) => s.draftPlayers);
@@ -42,7 +43,7 @@ export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnl
   // 1. Pointer Down Handler (Start dragging)
   const handlePointerDown = useCallback(
     (player: FormationPlayer, e: React.PointerEvent<HTMLDivElement>) => {
-      if (isReadOnly) return;
+      if (isReadOnly || onPlayerAction) return;
       e.preventDefault();
       e.stopPropagation();
 
@@ -75,7 +76,7 @@ export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnl
         return;
       }
     },
-    [isReadOnly, setActiveDrag, selectedBenchUserId, selectedPitchUserId, swapPlayers, setSelectedBench, setSelectedPitch]
+    [isReadOnly, onPlayerAction, setActiveDrag, selectedBenchUserId, selectedPitchUserId, swapPlayers, setSelectedBench, setSelectedPitch]
   );
 
   // 2. Pointer Move Handler (Dragging in progress)
@@ -305,8 +306,9 @@ export function TacticalPitch({ teamColor = '#B7F34B', className = '', isReadOnl
                   isSelected={isSelected}
                   teamColor={teamColor}
                   onPointerDown={(e) => handlePointerDown(player, e)}
-                  onClick={() => {
+                  onClick={event => {
                     if (isReadOnly) return;
+                    if (onPlayerAction) { onPlayerAction(player, event.currentTarget); return; }
                     if (selectedBenchUserId) {
                       swapPlayers(player.userId, selectedBenchUserId);
                       setSelectedBench(null);

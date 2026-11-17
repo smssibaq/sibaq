@@ -34,6 +34,7 @@ export function BadmintonGamePage({ gameId }: { gameId: string }) {
     const channel = supabase.channel(`realtime:badminton:${gameId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'badminton_rsvps', filter: `game_id=eq.${gameId}` }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'badminton_pairs', filter: `game_id=eq.${gameId}` }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'badminton_bench', filter: `game_id=eq.${gameId}` }, refresh)
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [gameId, queryClient]);

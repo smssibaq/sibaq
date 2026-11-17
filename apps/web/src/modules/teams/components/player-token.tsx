@@ -9,7 +9,7 @@ export interface PlayerTokenProps {
   isSelected?: boolean;
   teamColor?: string;
   onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -44,6 +44,9 @@ export const PlayerToken = React.memo(function PlayerToken({
       tabIndex={0}
       onPointerDown={onPointerDown}
       onClick={onClick}
+      aria-label={`Actions for ${name}`}
+      aria-haspopup="menu"
+      onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick?.(event); } }}
       style={style}
       className={`group relative flex flex-col items-center justify-center select-none cursor-grab active:cursor-grabbing transition-transform duration-150 touch-none ${
         isDragging ? 'scale-110 z-40 cursor-grabbing' : 'z-20 hover:scale-105'

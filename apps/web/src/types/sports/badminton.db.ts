@@ -8,6 +8,10 @@ export type BadmintonRsvpStatus = 'in' | 'maybe' | 'out';
 export type BadmintonSide = 'A' | 'B';
 
 export type BadmintonTables = {
+  badminton_bench: {
+    Row: { game_id: string; user_id: string; created_at: string };
+    Insert: never; Update: never; Relationships: [];
+  };
   badminton_games: {
     Row: {
       id: string;
@@ -40,6 +44,9 @@ export type BadmintonTables = {
     Row: {
       game_id: string;
       side: BadmintonSide;
+      position_index: number | null;
+      court_x: number | null;
+      court_y: number | null;
       user_id: string;
       created_at: string;
     };
@@ -50,6 +57,14 @@ export type BadmintonTables = {
 };
 
 export type BadmintonFunctions = {
+  badminton_save_positioned_lineup: {
+    Args: { p_game: string; p_side_a: (string | null)[]; p_side_b: (string | null)[]; p_bench: string[]; p_positions: import('../database.types').Json };
+    Returns: void;
+  };
+  badminton_save_lineup: {
+    Args: { p_game: string; p_side_a: (string | null)[]; p_side_b: (string | null)[]; p_bench: string[] };
+    Returns: void;
+  };
   badminton_update_game: {
     Args: { p_game: string; p_title: string; p_venue: string; p_starts_at: string };
     Returns: void;

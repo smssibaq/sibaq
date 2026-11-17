@@ -48,8 +48,10 @@ export interface BadmintonGameDetail {
   resultScore: string | null;
   winnerSide: BadmintonSide | null;
   players: BadmintonPlayer[];
-  pairs: { side: BadmintonSide; userId: string }[];
+  pairs: { side: BadmintonSide; userId: string; position?: number | null; coordinate?: { x: number; y: number } | null }[];
   myStatus: BadmintonRsvpStatus | null;
+  bench: string[];
+  lineupStorageReady: boolean;
 }
 
 export const badmintonApi = {
@@ -113,6 +115,19 @@ export const badmintonApi = {
     if (pErr) throw pErr;
     if (!detail) return null;
 
+    const { data: benchRows, error: benchError } = await supabase.from('badminton_bench').select('user_id').eq('game_id', gameId);
+    if (benchError && !['PGRST205', '42P01'].includes(benchError.code)) throw benchError;
+    let orderedPairs: { side: BadmintonSide; user_id: string; position_index?: number | null; court_x?: number | null; court_y?: number | null }[] | null = pairs;
+    if (!benchError) {
+      const { data, error } = await supabase.from('badminton_pairs').select('side, user_id, position_index').eq('game_id', gameId).order('position_index', { nullsFirst: false }).order('created_at').order('user_id');
+      if (error) throw error;
+      orderedPairs = data;
+    }
+    if (!benchError) {
+      const { data, error } = await supabase.from('badminton_pairs').select('side,user_id,position_index,court_x,court_y').eq('game_id', gameId).order('position_index', { nullsFirst: false });
+      if (error && !['42703', 'PGRST204'].includes(error.code)) throw error;
+      if (!error) orderedPairs = data;
+    }
     const userIds = (rsvps ?? []).map((r) => r.user_id);
     const { data: profiles, error: profileError } = userIds.length
       ? await supabase.from('profiles').select('id, display_name, avatar_url').in('id', userIds)
@@ -149,7 +164,9 @@ export const badmintonApi = {
       resultScore: detail.result_score,
       winnerSide: detail.winner_side,
       players,
-      pairs: (pairs ?? []).map((p) => ({ side: p.side, userId: p.user_id })),
+      bench: (benchRows ?? []).map(p => p.user_id),
+      lineupStorageReady: !benchError,
+      pairs: (orderedPairs ?? []).map((p) => ({ side: p.side, userId: p.user_id, position: p.position_index ?? null, coordinate: p.court_x != null && p.court_y != null ? { x: p.court_x, y: p.court_y } : null })),
       myStatus: players.find((p) => p.userId === currentUserId)?.status ?? null,
     };
   },
@@ -182,11 +199,29 @@ export const badmintonApi = {
   },
 
   async setPairs(gameId: string, sideA: string[], sideB: string[]): Promise<void> {
+    if (new Set([...sideA, ...sideB]).size !== sideA.length + sideB.length) throw new Error('A player can only be assigned once.');
+    const [{ data: game, error: gameError }, { data: attendance, error: attendanceError }] = await Promise.all([
+      supabase.from('badminton_games').select('format').eq('id', gameId).single(),
+      supabase.from('badminton_rsvps').select('user_id').eq('game_id', gameId).eq('status', 'in'),
+    ]);
+    if (gameError) throw gameError;
+    if (attendanceError) throw attendanceError;
+    const max = game.format === 'singles' ? 1 : 2;
+    if (sideA.length > max || sideB.length > max) throw new Error('Too many players on a side.');
+    if ([...sideA, ...sideB].some(id => !attendance.some(p => p.user_id === id))) throw new Error('Attendance changed. Only confirmed players can be assigned.');
     const { error } = await supabase.rpc('badminton_set_pairs', {
       p_game: gameId,
       p_side_a: sideA,
       p_side_b: sideB,
     });
+    if (error) throw error;
+  },
+
+  async saveLineup(gameId: string, sideA: (string | null)[], sideB: (string | null)[], bench: string[], positions?: Record<string, { x: number; y: number }>): Promise<void> {
+    const assigned = [...sideA, ...sideB, ...bench].filter(id => id !== null);
+    if (new Set(assigned).size !== assigned.length) throw new Error('A player can only have one assignment.');
+    const { error } = positions ? await supabase.rpc('badminton_save_positioned_lineup', { p_game: gameId, p_side_a: sideA, p_side_b: sideB, p_bench: bench, p_positions: positions }) : await supabase.rpc('badminton_save_lineup', { p_game: gameId, p_side_a: sideA, p_side_b: sideB, p_bench: bench });
+    if (error?.code === 'PGRST202') throw new Error('Run the badminton_court_positions SQL migration to save draggable positions.');
     if (error) throw error;
   },
 

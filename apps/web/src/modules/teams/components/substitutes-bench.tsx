@@ -9,6 +9,7 @@ export interface SubstitutesBenchProps {
   unassignedSquadMembers?: MatchAttendance[];
   onDeployToPitch?: (player: FormationPlayer | MatchAttendance) => void;
   isReadOnly?: boolean;
+  onPlayerAction?: (player: FormationPlayer, element: HTMLElement) => void;
 }
 
 export function SubstitutesBench({
@@ -17,6 +18,7 @@ export function SubstitutesBench({
   unassignedSquadMembers = [],
   onDeployToPitch,
   isReadOnly = false,
+  onPlayerAction,
 }: SubstitutesBenchProps) {
   const draftPlayers = useFormationStore((s) => s.draftPlayers);
   const selectedBenchUserId = useFormationStore((s) => s.selectedBenchUserId);
@@ -24,7 +26,6 @@ export function SubstitutesBench({
 
   const setSelectedBench = useFormationStore((s) => s.setSelectedBench);
   const swapPlayers = useFormationStore((s) => s.swapPlayers);
-  const toggleSubstitute = useFormationStore((s) => s.toggleSubstitute);
   const deployPlayerToPitch = useFormationStore((s) => s.deployPlayerToPitch);
   const addPlayerToBench = useFormationStore((s) => s.addPlayerToBench);
   const updatePlayerPosition = useFormationStore((s) => s.updatePlayerPosition);
@@ -122,7 +123,9 @@ export function SubstitutesBench({
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleBenchPlayerClick(player)}
+                  onClick={event => onPlayerAction ? onPlayerAction(player, event.currentTarget) : handleBenchPlayerClick(player)}
+                  onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); if (onPlayerAction) onPlayerAction(player, event.currentTarget); else handleBenchPlayerClick(player); } }}
+                  aria-haspopup="menu"
                   className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer select-none"
                 >
                   <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface border border-border text-xs font-bold text-foreground">
@@ -196,7 +199,7 @@ export function SubstitutesBench({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => toggleSubstitute(player.userId)}
+                      onClick={() => handleDeploy(player)}
                       title="Promote directly to pitch"
                       className="h-8 px-2 text-[11px] border-border text-foreground hover:bg-surface-subtle"
                     >
@@ -255,7 +258,7 @@ export function SubstitutesBench({
                   key={member.userId}
                   className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-surface-subtle/60 hover:bg-surface-subtle transition-all"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div role="button" tabIndex={0} aria-haspopup="menu" onClick={event => onPlayerAction?.({ userId: member.userId, teamId: '', displayName: name, avatarUrl: member.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, event.currentTarget)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onPlayerAction?.({ userId: member.userId, teamId: '', displayName: name, avatarUrl: member.profile?.avatarUrl, coordinate: null, positionLabel: 'SUB', isSubstitute: true }, event.currentTarget); } }} className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface border border-border text-xs font-bold text-foreground">
                       {member.profile?.avatarUrl ? (
                         <img

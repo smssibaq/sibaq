@@ -178,38 +178,11 @@ export const teamApi: ExtendedTeamService = {
       }
     }
 
-    // 1. Explicitly remove any previous membership in this match before assigning to new team
-    try {
-      const { data: teamData } = await supabase
-        .from('teams')
-        .select('match_id')
-        .eq('id', teamId)
-        .maybeSingle();
-
-      if (teamData?.match_id) {
-        // Delete previous membership from other teams in this match
-        await supabase
-          .from('team_players')
-          .delete()
-          .eq('match_id', teamData.match_id)
-          .eq('user_id', userId);
-
-        // Pre-emptively record attendance as 'playing' so assign_team_player never fails on attendance checks
-        await supabase
-          .from('match_attendance')
-          .upsert(
-            {
-              match_id: teamData.match_id,
-              user_id: userId,
-              status: 'playing',
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'match_id,user_id' }
-          );
-      }
-    } catch {
-      // Non-blocking
-    }
+    const { data: team, error: teamError } = await supabase.from('teams').select('match_id').eq('id', teamId).single();
+    if (teamError) throw teamError;
+    const { data: attendance, error: attendanceError } = await supabase.from('match_attendance').select('status').eq('match_id', team.match_id).eq('user_id', userId).maybeSingle();
+    if (attendanceError) throw attendanceError;
+    if (attendance?.status !== 'playing') throw new Error('Only players with a Playing RSVP can join active lineups.');
 
     // 2. If assigning as substitute or coordinates are null, explicitly use 'SUB' to bypass 'Valid pitch coordinates required' check
     const effectivePosition = isSubstitute || !coordinate ? 'SUB' : position;
@@ -231,30 +204,6 @@ export const teamApi: ExtendedTeamService = {
         throw new AppError(GOALKEEPER_DUPLICATE_MESSAGE, 'CONFLICT', 409);
       }
 
-      // Fallback: If RPC throws coordinate error or RPC fails, ensure direct insert as substitute
-      const { data: teamData } = await supabase
-        .from('teams')
-        .select('match_id')
-        .eq('id', teamId)
-        .maybeSingle();
-
-      if (teamData?.match_id) {
-        const { error: insertError } = await supabase
-          .from('team_players')
-          .upsert(
-            {
-              team_id: teamId,
-              match_id: teamData.match_id,
-              user_id: userId,
-              position_label: 'SUB',
-              is_substitute: true,
-              pitch_x: null,
-              pitch_y: null,
-            },
-            { onConflict: 'match_id,user_id' }
-          );
-        if (!insertError) return;
-      }
       throw error;
     }
   },
@@ -384,23 +333,6 @@ export const teamApi: ExtendedTeamService = {
       );
     }
 
-    // 6. Pre-emptively ensure match attendance for all placed players
-    try {
-      if (teamData.match_id && params.positions.length > 0) {
-        const attendanceUpserts = params.positions.map((p) => ({
-          match_id: teamData.match_id,
-          user_id: p.userId,
-          status: 'playing' as const,
-          updated_at: new Date().toISOString(),
-        }));
-        await supabase
-          .from('match_attendance')
-          .upsert(attendanceUpserts, { onConflict: 'match_id,user_id' });
-      }
-    } catch {
-      // Non-blocking
-    }
-
     // 7. Format positions payload with strict x/y/position contract and normalization [0, 1]
     const formattedPositions = params.positions.map((p) => {
       let normX = p.pitchX;
@@ -481,93 +413,14 @@ export const teamApi: ExtendedTeamService = {
 
   // 5. Fetch all active squad members merged with match attendance
   async listConfirmedMatchPlayers(matchId: string): Promise<MatchAttendance[]> {
-    // 1. Fetch match to get squad_id
-    const { data: matchData, error: matchError } = await supabase
-      .from('matches')
-      .select('squad_id')
-      .eq('id', matchId)
-      .single();
-
-    if (matchError || !matchData?.squad_id) {
-      console.error('Failed to get match squad_id:', matchError);
-      return [];
-    }
-
-    const squadId = matchData.squad_id;
-
-    // 2. Fetch all active squad members
-    const { data: squadMembers, error: membersError } = await supabase
-      .from('squad_members')
-      .select('user_id, role, status')
-      .eq('squad_id', squadId)
-      .eq('status', 'active');
-
-    if (membersError) {
-      console.error('Failed to fetch squad members:', membersError);
-      throw membersError;
-    }
-
-    if (!squadMembers || squadMembers.length === 0) {
-      return [];
-    }
-
-    const userIds = squadMembers.map((m) => m.user_id);
-
-    // 3. Fetch user profiles and match_attendance in parallel
-    const [profilesRes, attendanceRes] = await Promise.all([
-      supabase.from('profiles').select('*').in('id', userIds),
-      supabase
-        .from('match_attendance')
-        .select('user_id, status, updated_at')
-        .eq('match_id', matchId),
-    ]);
-
-    const profileList = (profilesRes.data as unknown as ProfileRow[]) || [];
-    const attendanceRecords = attendanceRes.data || [];
-    const attendanceMap = new Map<string, { status: string; updated_at?: string }>();
-    attendanceRecords.forEach((att) => {
-      attendanceMap.set(att.user_id, { status: att.status, updated_at: att.updated_at });
-    });
-
-    const result: MatchAttendance[] = [];
-
-    for (const member of squadMembers) {
-      const att = attendanceMap.get(member.user_id);
-      const attStatus = att?.status;
-
-      // Exclude players who explicitly marked 'not_playing'
-      if (attStatus === 'not_playing') {
-        continue;
-      }
-
-      const prof = profileList.find((p) => p.id === member.user_id);
-      const resolvedName =
-        prof?.display_name ||
-        prof?.full_name ||
-        (prof?.email ? prof.email.split('@')[0] : null) ||
-        'Squad Player';
-
-      // Map attendance status: 'playing' | 'maybe' | 'unconfirmed'
-      const finalStatus = (
-        attStatus === 'playing' || attStatus === 'maybe' ? attStatus : 'unconfirmed'
-      ) as AttendanceStatus;
-
-      result.push({
-        matchId,
-        userId: member.user_id,
-        status: finalStatus,
-        updatedAt: att?.updated_at || new Date().toISOString(),
-        profile: {
-          id: member.user_id,
-          displayName: resolvedName,
-          avatarUrl: prof?.avatar_url || null,
-          preferredPosition: (prof?.preferred_position as FootballPosition | null) || null,
-          createdAt: prof?.created_at || '',
-          updatedAt: prof?.updated_at || '',
-        },
-      });
-    }
-
-    return result;
+    const { data: rows, error } = await supabase.from('match_attendance').select('user_id,status,updated_at').eq('match_id', matchId).eq('status', 'playing');
+    if (error) throw error;
+    if (!rows?.length) return [];
+    const { data: profiles, error: profileError } = await supabase.from('profiles').select('id,display_name,avatar_url,preferred_position').in('id', rows.map(r => r.user_id));
+    if (profileError) throw profileError;
+    return rows.map(row => { const profile = profiles?.find(p => p.id === row.user_id); return {
+      matchId, userId: row.user_id, status: 'playing' as AttendanceStatus, updatedAt: row.updated_at,
+      profile: profile ? { id: profile.id, displayName: profile.display_name, avatarUrl: profile.avatar_url, preferredPosition: profile.preferred_position as FootballPosition | null, createdAt: '', updatedAt: '' } : null,
+    }; });
   },
 };

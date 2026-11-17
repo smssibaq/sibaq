@@ -33,10 +33,10 @@ export function useTeamLineup(matchId: string) {
   return {
     match: matchQuery.data ?? null,
     teams: teamsQuery.data ?? [],
-    confirmedPlayers: confirmedPlayersQuery.data ?? [],
-    isLoading: matchQuery.isLoading || teamsQuery.isLoading,
-    isError: matchQuery.isError || teamsQuery.isError,
-    error: matchQuery.error || teamsQuery.error,
+    confirmedPlayers: (confirmedPlayersQuery.data ?? []).filter(p => p.status === 'playing'),
+    isLoading: matchQuery.isLoading || teamsQuery.isLoading || confirmedPlayersQuery.isLoading,
+    isError: matchQuery.isError || teamsQuery.isError || confirmedPlayersQuery.isError,
+    error: matchQuery.error || teamsQuery.error || confirmedPlayersQuery.error,
     refetch: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.teams.byMatch(matchId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.detail(matchId) });
