@@ -109,6 +109,18 @@ function getPageBreadcrumbs(pathname: string): { section: string; title: string 
   if (pathname.startsWith('/admin')) {
     return { section: 'System', title: 'Admin Console' };
   }
+  if (pathname === '/cricket') {
+    return { section: 'Cricket', title: 'Cricket Match Hub' };
+  }
+  if (pathname === '/cricket/create') {
+    return { section: 'Cricket', title: 'New Cricket Match' };
+  }
+  if (pathname === '/cricket/join' || pathname.startsWith('/cricket/join')) {
+    return { section: 'Cricket', title: 'Join Cricket Match' };
+  }
+  if (pathname.startsWith('/cricket/')) {
+    return { section: 'Cricket', title: 'Match Details & Lineup' };
+  }
   return { section: 'Turf XI', title: 'Kalikkanundo' };
 }
 
