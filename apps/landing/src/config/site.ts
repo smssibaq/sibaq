@@ -20,7 +20,7 @@ export const siteConfig: SiteConfig = {
   tagline: 'Your Game. Your Squad. Every Sport.',
   description:
     'The multi-sport squad and match management platform built for Kerala players. Create permanent squads, organize matches, manage lineups, and track attendance across Football, Cricket, Badminton, and Volleyball.',
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173',
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://kalikkanundo.vercel.app',
   navLinks: [
     { label: 'Sports', href: '#sports' },
     { label: 'Features', href: '#features' },
