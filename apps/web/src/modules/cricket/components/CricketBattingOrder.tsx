@@ -33,7 +33,7 @@ export function CricketBattingOrder({game,onDraftChange,side:controlledSide,onSi
     <ol className="space-y-2">{order.map((id,index)=>{
       const player=team.find(p=>p.user_id===id);if(!player)return null;
       return <li key={id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
-        <span className="w-6 font-mono font-bold text-primary">{index+1}</span><Avatar src={player.avatar_url} fallback={player.name} size="sm" />
+        <span className="w-6 font-mono font-bold text-primary">{index+1}</span><Avatar userId={player.user_id} alt={player.name} src={player.avatar_url} fallback={player.name} size="sm" />
         <span className="min-w-0 flex-1 break-words text-sm font-semibold">{player.name}</span>
         {player.is_captain && <Badge variant="outline">C</Badge>}{player.is_wicketkeeper && <Badge variant="outline">WK</Badge>}
         {canEdit && <div className="flex gap-1">

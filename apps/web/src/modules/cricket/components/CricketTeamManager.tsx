@@ -24,7 +24,7 @@ export function CricketTeamManager({game}:{game:CricketGameDetail}){
         <h3 className="font-bold">{side?'Team '+side:'Unassigned'} <span className="text-sm font-normal text-muted-foreground">({players.length}{side?'/'+game.players_per_side:''})</span></h3>
         {!players.length && <p className="text-sm text-muted-foreground">{side?'No players assigned.':'All confirmed players have a team.'}</p>}
         {players.map(player=><div key={player.user_id} className="space-y-2 rounded-lg border border-border bg-surface p-3">
-          <div className="flex items-center gap-2"><Avatar src={player.avatar_url} fallback={player.name} size="sm" /><span className="min-w-0 flex-1 break-words text-sm font-semibold">{player.name}</span>
+          <div className="flex items-center gap-2"><Avatar userId={player.user_id} alt={player.name} src={player.avatar_url} fallback={player.name} size="sm" /><span className="min-w-0 flex-1 break-words text-sm font-semibold">{player.name}</span>
             {player.is_captain && <Badge variant="outline">C</Badge>}{player.is_wicketkeeper && <Badge variant="outline">WK</Badge>}
           </div>
           {canEdit && <div className="flex flex-wrap gap-2">

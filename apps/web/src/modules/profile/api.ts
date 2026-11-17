@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/infrastructure/supabase/client';
 import type { Json } from '@/types/database.types';
 import type { PlayerProfile, ProfileDraft, SportCatalogItem } from './types';
@@ -46,4 +46,8 @@ export function validateAbout(draft: ProfileDraft): string | null {
   if(draft.homeArea.trim().length>80) return 'Home area must be at most 80 characters';
   if(draft.bio.trim().length>160) return 'Bio must be at most 160 characters';
   return null;
+}
+
+export function refreshPlayerPhotos(client:QueryClient){
+  return client.invalidateQueries({predicate:query=>['teams','team-players','matches','squads','badminton','cricket','volleyball'].includes(String(query.queryKey[0]))});
 }

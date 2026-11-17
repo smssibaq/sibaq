@@ -22,7 +22,7 @@ export function VolleyballPlayerList({ players, currentUserId }: { players: Voll
             <ul className="space-y-1.5">
               {group.map((p) => (
                 <li key={p.user_id} className="flex items-center gap-2.5 min-w-0">
-                  <Avatar src={p.avatar_url} fallback={p.name} size="sm" />
+                  <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url} fallback={p.name} size="sm" />
                   <span className="text-sm text-foreground truncate">
                     {p.name}
                     {p.user_id === currentUserId && <span className="text-muted-foreground"> (you)</span>}

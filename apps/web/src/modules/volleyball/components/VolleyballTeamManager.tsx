@@ -29,7 +29,7 @@ function TeamColumn({
       <ul className="space-y-1.5">
         {players.map((p) => (
           <li key={p.user_id} className="flex items-center gap-1.5 min-w-0">
-            <Avatar src={p.avatar_url} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
+            <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
             <span className="text-xs text-foreground truncate flex-1">{p.name}</span>
             {isOrganizer && (
               <>
@@ -110,7 +110,7 @@ export function VolleyballTeamManager({ game }: { game: VolleyballGameDetail }) 
           <ul className="space-y-1.5">
             {unassigned.map((p) => (
               <li key={p.user_id} className="flex items-center gap-2 min-w-0">
-                <Avatar src={p.avatar_url} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
+                <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
                 <span className="text-sm text-foreground truncate flex-1">{p.name}</span>
                 {canEdit && (
                   <div className="flex gap-1.5 shrink-0">

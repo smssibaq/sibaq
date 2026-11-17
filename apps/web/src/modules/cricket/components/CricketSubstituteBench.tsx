@@ -42,7 +42,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                 className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border bg-surface-subtle"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <Avatar src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-7 w-7 text-xs" />
+                  <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-7 w-7 text-xs" />
                   <div className="truncate min-w-0">
                     <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
                     <p className="text-[10px] text-muted-foreground font-medium">
@@ -111,7 +111,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                 className="flex items-center justify-between gap-2 p-2 rounded-lg border border-dashed border-border bg-surface opacity-80"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <Avatar src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
+                  <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-6 w-6 text-[10px]" />
                   <span className="text-xs font-medium text-foreground truncate">{p.name}</span>
                 </div>
                 <span className="text-[10px] font-semibold text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20">
@@ -139,7 +139,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                 key={p.user_id}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-surface text-muted-foreground border border-border"
               >
-                <Avatar src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-4 w-4 text-[9px]" />
+                <Avatar userId={p.user_id} alt={p.name} src={p.avatar_url ?? undefined} fallback={p.name} size="sm" className="h-4 w-4 text-[9px]" />
                 <span className="line-through">{p.name}</span>
               </span>
             ))}

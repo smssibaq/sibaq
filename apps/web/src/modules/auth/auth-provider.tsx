@@ -1,3 +1,4 @@
+import { ProfilePhotoContext } from '@/lib/images/profile-photo-context';
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase/client';
@@ -176,7 +177,7 @@ export function AuthProvider({children}:{children:React.ReactNode}) {
   return <AuthContext.Provider value={{
     user,session,profile,role,isLoading,isConfigured:isSupabaseConfigured,needsOnboarding:!profile?.onboarding_completed,
     profileError:profileQuery.error,signInWithGoogle,signInWithEmail,signUpWithEmail,signOut,refreshProfile,
-  }}>{children}</AuthContext.Provider>;
+  }}><ProfilePhotoContext.Provider value={{userId:user?.id ?? null,url:profile?.avatar_url ?? null}}>{children}</ProfilePhotoContext.Provider></AuthContext.Provider>;
 }
 export function useAuth(){
   const context=useContext(AuthContext);if(!context)throw new Error('useAuth must be used within an AuthProvider');return context;
