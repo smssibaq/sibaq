@@ -5,7 +5,7 @@ export type CricketStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancell
 export interface CricketGameSummary {
   game_id: string;
   title: string;
-  venue: string;
+  venue: string | null;
   starts_at: string;
   status: CricketStatus;
   players_per_side: number;
@@ -26,12 +26,13 @@ export interface CricketPlayer {
   batting_position: number | null;
   is_captain: boolean;
   is_wicketkeeper: boolean;
+  joined_at: string;
 }
 
 export interface CricketGameDetail {
   game_id: string;
   title: string;
-  venue: string;
+  venue: string | null;
   starts_at: string;
   status: CricketStatus;
   players_per_side: number;
@@ -41,10 +42,19 @@ export interface CricketGameDetail {
   is_organizer: boolean;
   my_status: CricketAttendance | null;
   notes: string | null;
-  toss: { winning_team: CricketSide; decision: 'bat' | 'bowl' } | null;
+  created_by: string;
+  batting_order: CricketBattingSlot[];
+  field_positions: CricketFieldSpot[];
+  toss: { game_id:string; recorded_by:string; recorded_at:string; winning_team: CricketSide; decision: 'bat' | 'bowl' } | null;
   players: CricketPlayer[];
 }
 
+export interface CricketBattingSlot { team_side:CricketSide; player_id:string; batting_position:number }
+export interface CricketFieldSpot {
+  team_side:CricketSide; player_id:string; position_name:string;
+  x_pos:number|null; y_pos:number|null; is_custom:boolean;
+}
+export interface CricketDraftAction { dirty:boolean; pending:boolean; save:()=>void }
 export interface CricketFieldPosition {
   player_id: string;
   position_name: string;
@@ -55,9 +65,10 @@ export interface CricketFieldPosition {
 
 export interface CreateCricketGameInput {
   title: string;
-  venue: string;
+  venue: string | null;
   startsAt: string;
   playersPerSide: number;
   oversPerInnings: number;
   notes?: string;
+  squad?: string | null;
 }
