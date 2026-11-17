@@ -28,6 +28,7 @@ import { findPresetForFormat, formatFromPlayersPerTeam } from '../teams/presets'
 import { squadApi } from '../squads/api';
 import { useAuth } from '../auth/auth-provider';
 import type { MatchStatus } from './types';
+import { RatingsPanel } from '../ratings';
 import type { AttendanceStatus } from '../attendance/types';
 import {
   formatDate,
@@ -938,6 +939,9 @@ export function MatchDetailPage() {
           </div>
         )}
       </Card>
+
+      {/* Ratings & match review (shared, appears after kickoff) */}
+      {matchId && <RatingsPanel gameId={matchId} />}
 
       {/* ========================================================================= */}
       {/* DIALOGS: Edit Fixture & Cancel Confirmation                               */}
