@@ -23,6 +23,7 @@ import { Breadcrumbs } from './breadcrumb';
 import { MobileBottomNavigation } from './mobile-bottom-navigation';
 import { SportSwitcher, activeSportForPath } from './sport-switcher';
 import { SportSelectionDrawer } from './sport-selection-drawer';
+import { KunjappanChat } from './kunjappan-chat';
 import { squadApi } from '@/modules/squads/api';
 import { matchApi } from '@/modules/matches/api';
 import { queryKeys } from '@/infrastructure/query-keys';
@@ -558,6 +559,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Global Multi-Sport Selection Drawer */}
         <SportSelectionDrawer />
+
+        {/* Kunjappan AI Support Assistant */}
+        <KunjappanChat />
       </div>
     </div>
   );
