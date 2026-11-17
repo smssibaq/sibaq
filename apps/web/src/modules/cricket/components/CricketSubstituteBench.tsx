@@ -56,7 +56,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                     <Button
                       size="sm"
                       variant={p.team_side === 'A' ? 'default' : 'outline'}
-                      className="h-6 px-2 text-[10px] font-bold"
+                      className="min-h-11 min-w-11 px-3 text-[10px] font-bold"
                       onClick={() => movePlayer(p.user_id, p.team_side === 'A' ? null : 'A')}
                     >
                       A
@@ -64,7 +64,7 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                     <Button
                       size="sm"
                       variant={p.team_side === 'B' ? 'default' : 'outline'}
-                      className="h-6 px-2 text-[10px] font-bold"
+                      className="min-h-11 min-w-11 px-3 text-[10px] font-bold"
                       onClick={() => movePlayer(p.user_id, p.team_side === 'B' ? null : 'B')}
                     >
                       B
@@ -74,7 +74,9 @@ export function CricketSubstituteBench({ game }: { game: CricketGameDetail }) {
                         type="button"
                         onClick={() => movePlayer(p.user_id, null)}
                         title="Move to Bench"
-                        className="rounded p-1 text-muted-foreground hover:text-foreground"
+                        aria-label={'Remove '+p.name+' from team'}
+                        disabled={setTeam.isPending}
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded text-muted-foreground hover:text-foreground"
                       >
                         <UserMinus className="h-3 w-3" />
                       </button>

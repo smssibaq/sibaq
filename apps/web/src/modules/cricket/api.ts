@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/infrastructure/supabase/client';
 import { useToast } from '@/components/ui';
@@ -48,10 +48,15 @@ export const cricketApi={
   setBattingOrder:(id:string,side:CricketSide,assignments:Array<{player_id:string;batting_position:number}>)=>unwrap<void>(supabase.rpc('cricket_set_batting_order',{p_game:id,p_side:side,p_assignments:assignments})),
   setFieldPositions:(id:string,side:CricketSide,positions:CricketFieldPosition[])=>unwrap<void>(supabase.rpc('cricket_set_field_positions',{p_game:id,p_side:side,p_positions:positions as unknown as Json})),
   recordToss:(id:string,winning:CricketSide,decision:'bat'|'bowl')=>unwrap<void>(supabase.rpc('cricket_record_toss',{p_game:id,p_winning_team:winning,p_decision:decision})),
-  setStatus:(id:string,status:CricketStatus)=>unwrap<void>(supabase.rpc('cricket_set_status',{p_game:id,p_status:status})),
+  setStatus:(id:string,status:Exclude<CricketStatus,'in_progress'>)=>unwrap<void>(supabase.rpc('cricket_set_status',{p_game:id,p_status:status})),
 };
+function useQueryErrorToast(error:unknown){
+  const last=useRef<unknown>(null);const {toast}=useToast();
+  useEffect(()=>{if(error && error!==last.current){last.current=error;toast.error('Could not load cricket',cricketErrorMessage(error));}},[error,toast]);
+}
 export function useCricketGames(){
-  return useQuery({queryKey:cricketKeys.list,queryFn:cricketApi.listMyGames});
+  const query=useQuery({queryKey:cricketKeys.list,queryFn:cricketApi.listMyGames});
+  useQueryErrorToast(query.error);return query;
 }
 export function useCricketGame(gameId:string|undefined){
   const client=useQueryClient();const id=gameId ?? '';
@@ -67,6 +72,7 @@ export function useCricketGame(gameId:string|undefined){
     return ()=>{void supabase.removeChannel(channel);};
   },[id,client]);
   const query=useQuery({queryKey:cricketKeys.detail(id),queryFn:()=>cricketApi.getGame(id),enabled:Boolean(id),retry:false});
+  useQueryErrorToast(query.error);
   return {...query,data:query.data && denied.data?{...query.data,is_organizer:false}:query.data};
 }
 function useGameMutation<T>(id:string,fn:(variables:T)=>Promise<unknown>,successMessage?:string){
@@ -90,7 +96,12 @@ export function useSetAttendance(id:string){
   });
 }
 export function useSetTeam(id:string){
-  return useGameMutation<{userId:string;side:CricketSide|null}>(id,({userId,side})=>cricketApi.setTeam(id,userId,side));
+  const client=useQueryClient();const {toast}=useToast();
+  return useGameMutation<{userId:string;side:CricketSide|null}>(id,async({userId,side})=>{
+    const before=client.getQueryData<CricketGameDetail>(cricketKeys.detail(id))?.players.find(p=>p.user_id===userId);
+    await cricketApi.setTeam(id,userId,side);
+    if(before?.team_side && before.team_side!==side)toast.success('Captain/WK cleared','The batting slot and field placement were also cleared.');
+  });
 }
 export function useAutoBalance(id:string){return useGameMutation<void>(id,()=>cricketApi.autoBalance(id),'Teams balanced');}
 export function useSetCaptain(id:string){
@@ -108,7 +119,7 @@ export function useSetFieldPositions(id:string){
 export function useRecordToss(id:string){
   return useGameMutation<{winning_team:CricketSide;decision:'bat'|'bowl'}>(id,({winning_team,decision})=>cricketApi.recordToss(id,winning_team,decision),'Toss recorded');
 }
-export function useSetStatus(id:string){return useGameMutation<CricketStatus>(id,status=>cricketApi.setStatus(id,status),'Game updated');}
+export function useSetStatus(id:string){return useGameMutation<Exclude<CricketStatus,'in_progress'>>(id,status=>cricketApi.setStatus(id,status),'Game updated');}
 export function useCreateGame(){
   const client=useQueryClient();const {toast}=useToast();
   return useMutation({mutationFn:cricketApi.createGame,onSuccess:id=>invalidateCricketGame(client,id),onError:error=>toast.error('Could not create game',cricketErrorMessage(error))});
@@ -125,4 +136,16 @@ export function cricketNav(){
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const go=useCricketNav();
   return {toHub:()=>go(cricketPaths.hub),toCreate:()=>go(cricketPaths.create),toJoin:(code?:string)=>go(cricketPaths.join(code)),toGame:(id:string)=>go(cricketPaths.game(id))};
+}
+
+/** Compatibility with the team's already-applied visual-lineup storage. */
+export function useCricketLayout(id:string){
+  const client=useQueryClient();
+  const query=useQuery({queryKey:[...cricketKeys.detail(id),'lineup-layout'],queryFn:()=>cricketApi.getLineupLayout(id),enabled:Boolean(id),retry:false});
+  useQueryErrorToast(query.error);
+  useEffect(()=>{if(forbidden(query.error))client.setQueryData(cricketKeys.denied(id),true);},[client,id,query.error]);
+  return query;
+}
+export function useSaveCricketLayout(id:string){
+  return useGameMutation<import('@/components/lineup/sport-lineup-board').LayoutRow[]>(id,rows=>cricketApi.saveLineupLayout(id,rows));
 }

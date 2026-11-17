@@ -6,7 +6,7 @@ export function CricketShare({ title, code }: { title: string; code: string }) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const inviteUrl = `${window.location.origin}/cricket/join?code=${code}`;
+  const inviteUrl = `${window.location.origin}/cricket/join?code=${encodeURIComponent(code)}`;
 
   const copyCode = async () => {
     try {
@@ -51,7 +51,7 @@ export function CricketShare({ title, code }: { title: string; code: string }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <code className="flex-1 rounded-xl border border-border bg-surface-subtle px-3 py-2 text-center font-mono text-base font-extrabold tracking-widest text-primary">
+        <code className="min-w-0 flex-1 overflow-hidden text-ellipsis rounded-xl border border-border bg-surface-subtle px-3 py-2 text-center font-mono text-base font-extrabold tracking-widest text-primary">
           {code}
         </code>
         <Button
@@ -60,7 +60,7 @@ export function CricketShare({ title, code }: { title: string; code: string }) {
           variant="outline"
           onClick={copyCode}
           aria-label="Copy invitation code"
-          className="h-10 px-3"
+          className="min-h-11 px-3"
         >
           {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
         </Button>
@@ -68,7 +68,7 @@ export function CricketShare({ title, code }: { title: string; code: string }) {
           type="button"
           size="sm"
           onClick={shareInvite}
-          className="h-10 px-3.5 bg-primary text-primary-foreground font-bold"
+          className="min-h-11 px-3.5 bg-primary text-primary-foreground font-bold"
         >
           <Share2 className="h-4 w-4 mr-1.5" />
           Share

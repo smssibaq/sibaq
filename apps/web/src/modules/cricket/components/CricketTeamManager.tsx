@@ -1,20 +1,17 @@
 ﻿import { useState } from 'react';
-import { Avatar, Badge, Button, Card, ConfirmDialog, useToast } from '@/components/ui';
+import { Avatar, Badge, Button, Card, ConfirmDialog } from '@/components/ui';
 import type { CricketGameDetail, CricketPlayer, CricketSide } from '../types';
 import { useAutoBalance, useSetCaptain, useSetTeam, useSetWicketkeeper } from '../api';
 
 export function CricketTeamManager({game}:{game:CricketGameDetail}){
   const [confirm,setConfirm]=useState(false);
   const team=useSetTeam(game.game_id),captain=useSetCaptain(game.game_id),keeper=useSetWicketkeeper(game.game_id),balance=useAutoBalance(game.game_id);
-  const {toast}=useToast();
   const confirmed=game.players.filter(p=>p.attendance_status==='playing');
   const canEdit=game.is_organizer && game.status==='scheduled';
   const busy=team.isPending || captain.isPending || keeper.isPending || balance.isPending;
   function move(player:CricketPlayer,side:CricketSide|null){
     if(!canEdit)return;
-    team.mutate({userId:player.user_id,side},{onSuccess:()=>{
-      if(player.team_side && player.team_side!==side)toast.success('Captain/WK cleared','Their batting slot and field placement were also cleared.');
-    }});
+    team.mutate({userId:player.user_id,side});
   }
   return <Card className="space-y-4 p-4 sm:p-5">
     <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-bold">Teams</h2>

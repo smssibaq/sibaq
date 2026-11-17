@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ListOrdered, Compass, Activity, Users2 } from 'lucide-react';
 import { Card } from '@/components/ui';
 import type { CricketDraftAction, CricketGameDetail } from '../types';
@@ -12,6 +12,16 @@ export type LineupSection = 'fielding' | 'batting' | 'bowling' | 'bench' | 'visu
 
 export function CricketLineupWorkspace({ game, onDraftChange }: { game: CricketGameDetail; onDraftChange?: (action: CricketDraftAction | null) => void }) {
   const [activeSection, setActiveSection] = useState<LineupSection>('fielding');
+  const [fieldAction, setFieldAction] = useState<CricketDraftAction | null>(null);
+  const [battingAction, setBattingAction] = useState<CricketDraftAction | null>(null);
+  const saveAll = useCallback(() => {
+    if (fieldAction?.dirty) fieldAction.save();
+    if (battingAction?.dirty) battingAction.save();
+  }, [fieldAction, battingAction]);
+  useEffect(() => {
+    onDraftChange?.({ dirty: Boolean(fieldAction?.dirty || battingAction?.dirty), pending: Boolean(fieldAction?.pending || battingAction?.pending), save: saveAll });
+    return () => onDraftChange?.(null);
+  }, [onDraftChange, fieldAction, battingAction, saveAll]);
 
   const SECTIONS: { key: LineupSection; label: string; icon: typeof Compass }[] = [
     { key: 'visual', label: 'Visual lineup', icon: Compass },
@@ -53,9 +63,9 @@ export function CricketLineupWorkspace({ game, onDraftChange }: { game: CricketG
 
       {/* Section Content */}
       <div className="pt-2">
-        <div hidden={activeSection !== 'visual'}><CricketVisualLineup key={game.game_id} game={game} /></div>
-        <div hidden={activeSection !== 'fielding'}><CricketFieldPositions game={game} onDraftChange={activeSection === 'fielding' ? onDraftChange : undefined} /></div>
-        <div hidden={activeSection !== 'batting'}><CricketBattingOrder game={game} onDraftChange={activeSection === 'batting' ? onDraftChange : undefined} /></div>
+        {activeSection === 'visual' && <CricketVisualLineup key={game.game_id} game={game} />}
+        <div hidden={activeSection !== 'fielding'}><CricketFieldPositions game={game} onDraftChange={setFieldAction} /></div>
+        <div hidden={activeSection !== 'batting'}><CricketBattingOrder game={game} onDraftChange={setBattingAction} /></div>
         <div hidden={activeSection !== 'bowling'}><CricketBowlingPlan key={game.game_id} game={game} /></div>
         {activeSection === 'bench' && <CricketSubstituteBench game={game} />}
       </div>

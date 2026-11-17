@@ -23,7 +23,7 @@ export type CricketDisplayStatus = 'upcoming' | 'ready' | 'completed' | 'cancell
  */
 export function formatFormat(playersPerSide: number, overs: number): string {
   const base = `${playersPerSide}v${playersPerSide}`;
-  return overs > 0 ? `${base} · ${overs} overs` : base;
+  return overs > 0 ? `${base} · ${overs} ov` : `${base} · open`;
 }
 
 /**

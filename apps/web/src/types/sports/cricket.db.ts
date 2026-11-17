@@ -127,7 +127,7 @@ export type CricketFunctions = {
     Returns: void;
   };
   cricket_set_team: {
-    Args: { p_game: string; p_user: string | null; p_side: CricketSide | null };
+    Args: { p_game: string; p_user: string; p_side: CricketSide | null };
     Returns: void;
   };
   cricket_auto_balance: {
@@ -147,7 +147,7 @@ export type CricketFunctions = {
     Returns: void;
   };
   cricket_set_status: {
-    Args: { p_game: string; p_status: CricketStatus };
+    Args: { p_game: string; p_status: Exclude<CricketStatus, 'in_progress'> };
     Returns: void;
   };
 };

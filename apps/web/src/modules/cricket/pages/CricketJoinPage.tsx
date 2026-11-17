@@ -1,107 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearch } from '@tanstack/react-router';
-import { KeyRound, ArrowLeft } from 'lucide-react';
+import { Button, Card, Input, useToast } from '@/components/ui';
 import { PageHeader } from '@/components/common/page-header';
-import { Button, Card, FormField, Input, useToast } from '@/components/ui';
-import { normalizeError } from '@/lib/errors';
-import { useJoinByCode } from '../api';
+import { cricketErrorMessage, useJoinByCode } from '../api';
 import { cricketPaths, useCricketNav } from '../utils';
-
-export function CricketJoinPage() {
-  const go = useCricketNav();
-  const { toast } = useToast();
-  const search = useSearch({ strict: false }) as { code?: string };
-  const initialCode = (search.code ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-
-  const [code, setCode] = useState(initialCode);
-  const [error, setError] = useState<string | null>(null);
-  const autoJoined = useRef(false);
-
-  const joinMutation = useJoinByCode();
-
-  const handleJoin = (targetCode: string) => {
-    const clean = targetCode.trim().toUpperCase();
-    if (clean.length < 4) {
-      setError('Please enter a valid invitation code.');
-      return;
-    }
-    setError(null);
-
-    joinMutation.mutate(clean, {
-      onSuccess: (gameId) => {
-        toast.success('Joined Cricket Match', 'You have been added to the game roster.');
-        go(cricketPaths.game(gameId));
-      },
-      onError: (err) => {
-        const norm = normalizeError(err);
-        setError(norm.message);
-      },
-    });
-  };
-
-  useEffect(() => {
-    if (initialCode && !autoJoined.current) {
-      autoJoined.current = true;
-      handleJoin(initialCode);
-    }
-  }, [initialCode]);
-
-  return (
-    <div className="mx-auto max-w-md space-y-4">
-      <button
-        type="button"
-        onClick={() => go(cricketPaths.hub)}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        All cricket games
-      </button>
-
-      <PageHeader
-        title="Join cricket match"
-        description="Enter the invitation code shared by the match organizer."
-      />
-
-      <Card className="p-4 sm:p-6 space-y-4">
-        <FormField label="Invitation Code" htmlFor="invite-code" error={error ?? undefined} required>
-          <div className="relative">
-            <Input
-              id="invite-code"
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
-                setError(null);
-              }}
-              placeholder="e.g. CRK9281"
-              maxLength={12}
-              className="text-center font-mono text-lg font-bold tracking-widest h-12 uppercase"
-              autoFocus
-            />
-          </div>
-        </FormField>
-
-        <div className="flex gap-2 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={() => go(cricketPaths.hub)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            className="flex-1 bg-primary text-primary-foreground font-bold"
-            disabled={code.length < 4 || joinMutation.isPending}
-            isLoading={joinMutation.isPending}
-            onClick={() => handleJoin(code)}
-          >
-            <KeyRound className="h-4 w-4 mr-1.5" />
-            Join Match
-          </Button>
-        </div>
-      </Card>
-    </div>
-  );
+export function CricketJoinPage(){
+  const search=useSearch({strict:false}) as {code?:string};
+  const initialCode=String(search.code ?? '').trim().toUpperCase();
+  const [code,setCode]=useState(initialCode),[error,setError]=useState('');
+  const attempted=useRef<string|null>(null);
+  const {mutate,isPending}=useJoinByCode();const go=useCricketNav();const {toast}=useToast();
+  const join=useCallback((value:string)=>{
+    const clean=value.trim().toUpperCase();if(!clean){setError('Enter an invitation code.');return;}
+    setError('');mutate(clean,{onSuccess:id=>{toast.success('Joined as Maybe — confirm if you’re playing');go(cricketPaths.game(id));},onError:error=>setError(cricketErrorMessage(error))});
+  },[mutate,go,toast]);
+  useEffect(()=>{if(initialCode && attempted.current!==initialCode){attempted.current=initialCode;join(initialCode);}},[initialCode,join]);
+  function submit(event:FormEvent){event.preventDefault();if(!isPending)join(code);}
+  return <div className="mx-auto max-w-md space-y-4"><Button variant="ghost" onClick={()=>go(cricketPaths.hub)}>Back to cricket</Button><PageHeader title="Join cricket game" description="Enter the organizer’s invitation code. You’ll join as Maybe." />
+    <Card className="p-4 sm:p-6"><form onSubmit={submit} className="space-y-4"><label className="block space-y-2 text-sm font-semibold">Invitation code<Input autoFocus autoCapitalize="characters" autoComplete="off" value={code} disabled={isPending} onChange={e=>{setCode(e.target.value.toUpperCase());setError('');}} placeholder="Enter code" className="text-center font-mono text-lg tracking-widest" aria-invalid={Boolean(error)} /></label>{error && <p role="alert" className="text-sm text-danger">{error}</p>}<Button type="submit" className="w-full" isLoading={isPending} disabled={!code.trim()}>Join game</Button></form></Card>
+  </div>;
 }
-
