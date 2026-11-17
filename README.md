@@ -188,3 +188,6 @@ The three developers can now work independently without git conflicts:
 
 ## For Depoloyment
 - This happened for deployment
+
+# Deployment
+- Far from Deployment Branch 1
