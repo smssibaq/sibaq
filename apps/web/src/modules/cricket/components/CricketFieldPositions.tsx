@@ -1,9 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Shield, Sparkles, X, UserCheck, Save } from 'lucide-react';
-import { Button, useToast } from '@/components/ui';
-import type { CricketGameDetail, CricketSide } from '../types';
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui';
+import type { CricketDraftAction, CricketFieldPosition, CricketGameDetail, CricketSide } from '../types';
 import { useSetFieldPositions } from '../api';
-
+import { useLineupDraft, usePublishDraft } from '../lineup-draft';
 export interface FieldPositionDef {
   name: string;
   category: 'central' | 'off' | 'leg';
@@ -41,514 +40,72 @@ export const STANDARD_FIELD_POSITIONS: FieldPositionDef[] = [
   { name: 'Long On', category: 'leg', x: 0.36, y: 0.12 },
 ];
 
-export interface AssignedFieldPlayer {
-  playerId: string;
-  positionName: string;
-  x: number;
-  y: number;
-  isCustom?: boolean;
-}
 
-export function CricketFieldPositions({ game }: { game: CricketGameDetail }) {
-  const { toast } = useToast();
-  const setFieldPositions = useSetFieldPositions(game.game_id);
-  const [activeSide, setActiveSide] = useState<CricketSide>('A');
-
-  // Confirmed fielding team players
-  const fieldingTeam = useMemo(
-    () => game.players.filter((p) => p.attendance_status === 'playing' && p.team_side === activeSide),
-    [game.players, activeSide]
-  );
-
-  // Initial field positions state from team players
-  const [assignments, setAssignments] = useState<AssignedFieldPlayer[]>(() => {
-    // Generate default assignments for available team players
-    const autoAssigned: AssignedFieldPlayer[] = [];
-    const positionsList = ['Wicketkeeper', 'Bowler', 'Mid Off', 'Mid On', 'Cover', 'Midwicket', 'Point', 'Square Leg', 'Slip', 'Long Off', 'Long On'];
-
-    fieldingTeam.forEach((player, idx) => {
-      const posName = positionsList[idx % positionsList.length];
-      const standard = STANDARD_FIELD_POSITIONS.find((p) => p.name === posName) ?? STANDARD_FIELD_POSITIONS[0];
-      autoAssigned.push({
-        playerId: player.user_id,
-        positionName: standard.name,
-        x: standard.x,
-        y: standard.y,
-      });
-    });
-
-    return autoAssigned;
-  });
-
-  // Selected player marker or position for assignment
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-
-  const closed = game.status === 'completed' || game.status === 'cancelled';
-  const canEdit = game.is_organizer && !closed;
-
-  // Unassigned fielders
-  const unassignedPlayers = fieldingTeam.filter(
-    (p) => !assignments.some((a) => a.playerId === p.user_id)
-  );
-
-  // Field Presets
-  const applyPreset = (presetName: 'attacking' | 'defensive' | 'balanced') => {
-    if (!canEdit) return;
-
-    let targetPositions: string[] = [];
-    if (presetName === 'attacking') {
-      targetPositions = [
-        'Wicketkeeper',
-        'Bowler',
-        'Slip',
-        'Second Slip',
-        'Gully',
-        'Short Leg',
-        'Point',
-        'Cover',
-        'Mid Off',
-        'Mid On',
-        'Midwicket',
-      ];
-    } else if (presetName === 'defensive') {
-      targetPositions = [
-        'Wicketkeeper',
-        'Bowler',
-        'Long Off',
-        'Long On',
-        'Deep Midwicket',
-        'Deep Square Leg',
-        'Deep Fine Leg',
-        'Cover',
-        'Point',
-        'Mid Off',
-        'Mid On',
-      ];
-    } else {
-      targetPositions = [
-        'Wicketkeeper',
-        'Bowler',
-        'Slip',
-        'Point',
-        'Cover',
-        'Mid Off',
-        'Mid On',
-        'Midwicket',
-        'Square Leg',
-        'Fine Leg',
-        'Long Off',
-      ];
-    }
-
-    const newAssignments: AssignedFieldPlayer[] = [];
-    fieldingTeam.forEach((player, idx) => {
-      const posName = targetPositions[idx % targetPositions.length];
-      const standard = STANDARD_FIELD_POSITIONS.find((p) => p.name === posName) ?? STANDARD_FIELD_POSITIONS[0];
-      newAssignments.push({
-        playerId: player.user_id,
-        positionName: standard.name,
-        x: standard.x,
-        y: standard.y,
-      });
-    });
-
-    setAssignments(newAssignments);
-    toast.success('Field Preset Applied', `${presetName.toUpperCase()} field setup loaded.`);
-  };
-
-  const handlePositionClick = (pos: FieldPositionDef) => {
-    if (!canEdit) return;
-
-    if (selectedPlayerId) {
-      // Assign selected player to this position
-      setAssignments((prev) => {
-        const withoutPlayer = prev.filter((a) => a.playerId !== selectedPlayerId);
-        // Also remove if another player was on this position
-        const withoutPosition = withoutPlayer.filter((a) => a.positionName !== pos.name);
-        return [
-          ...withoutPosition,
-          {
-            playerId: selectedPlayerId,
-            positionName: pos.name,
-            x: pos.x,
-            y: pos.y,
-          },
-        ];
-      });
-      setSelectedPlayerId(null);
-    }
-  };
-
-  const removeAssignment = (playerId: string) => {
-    if (!canEdit) return;
-    setAssignments((prev) => prev.filter((a) => a.playerId !== playerId));
-    if (selectedPlayerId === playerId) setSelectedPlayerId(null);
-  };
-
-  const handleSave = () => {
-    const payload = assignments.map((a) => ({
-      player_id: a.playerId,
-      position_name: a.positionName,
-      x_pos: a.x,
-      y_pos: a.y,
-      is_custom: Boolean(a.isCustom),
+const PRESETS={
+  attacking:['Wicketkeeper','Bowler','Slip','Second Slip','Gully','Short Leg','Point','Cover','Mid Off','Mid On','Midwicket'],
+  balanced:['Wicketkeeper','Bowler','Slip','Point','Cover','Mid Off','Mid On','Midwicket','Square Leg','Fine Leg','Long Off'],
+  defensive:['Wicketkeeper','Bowler','Long Off','Long On','Deep Midwicket','Deep Square Leg','Deep Fine Leg','Cover','Point','Mid Off','Mid On'],
+};
+const clamp=(n:number)=>Math.round(Math.max(0,Math.min(100,n))*100)/100;
+export function CricketFieldPositions({game,onDraftChange}:{game:CricketGameDetail;onDraftChange?:(action:CricketDraftAction|null)=>void}){
+  const [side,setSide]=useState<CricketSide>('A');
+  const [selected,setSelected]=useState<string|null>(null);
+  const {mutate,isPending}=useSetFieldPositions(game.game_id);
+  const team=useMemo(()=>game.players.filter(p=>p.attendance_status==='playing' && p.team_side===side),[game.players,side]);
+  const source=useMemo<CricketFieldPosition[]>(()=>game.field_positions.filter(s=>s.team_side===side && team.some(p=>p.user_id===s.player_id)).sort((a,b)=>a.player_id.localeCompare(b.player_id)).map(s=>{
+    const standard=STANDARD_FIELD_POSITIONS.find(p=>p.name===s.position_name);
+    return {player_id:s.player_id,position_name:s.position_name,x_pos:clamp(s.x_pos ?? (standard?.x ?? .5)*100),y_pos:clamp(s.y_pos ?? (standard?.y ?? .5)*100),is_custom:s.is_custom};
+  }),[game.field_positions,side,team]);
+  const [positions,setPositions]=useLineupDraft(source,side,team.map(p=>p.user_id).join(','));
+  const selectedId=team.some(p=>p.user_id===selected)?selected:null;
+  const canEdit=game.is_organizer && game.status==='scheduled';
+  const dirty=JSON.stringify(positions)!==JSON.stringify(source);
+  const save=useCallback(()=>{if(canEdit && dirty && !isPending)mutate({side,positions});},[canEdit,dirty,isPending,mutate,side,positions]);
+  usePublishDraft(onDraftChange,canEdit && dirty,isPending,save);
+  function place(name:string,x:number,y:number,custom=false){
+    if(!canEdit || isPending || !selectedId)return;
+    setPositions(previous=>[...previous.filter(p=>p.player_id!==selectedId),{player_id:selectedId,position_name:name,x_pos:clamp(x),y_pos:clamp(y),is_custom:custom}]);
+    setSelected(null);
+  }
+  function preset(key:keyof typeof PRESETS){
+    if(!canEdit || isPending)return;
+    setPositions(team.map((player,index)=>{
+      const standard=STANDARD_FIELD_POSITIONS.find(p=>p.name===PRESETS[key][index])!;
+      return {player_id:player.user_id,position_name:standard.name,x_pos:standard.x*100,y_pos:standard.y*100,is_custom:false};
     }));
-
-    setFieldPositions.mutate(
-      { side: activeSide, positions: payload },
-      {
-        onSuccess: () => {
-          toast.success('Field Positions Saved', `Team ${activeSide} fielding layout saved to database.`);
-        },
-      }
-    );
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Header and Side Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-            <Shield className="h-4 w-4 text-primary" /> Tactical Cricket Ground
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Top-down oval field setup with 30-yard boundary & positions
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-lg border border-border self-start">
-          <button
-            type="button"
-            onClick={() => setActiveSide('A')}
-            className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
-              activeSide === 'A'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Team A Field
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSide('B')}
-            className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
-              activeSide === 'B'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Team B Field
-          </button>
-        </div>
-      </div>
-
-      {/* Field Presets Toolbar */}
-      {canEdit && (
-        <div className="flex items-center justify-between flex-wrap gap-2 p-2 rounded-xl bg-surface-subtle border border-border text-xs">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="font-semibold text-foreground">Tactical Presets:</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs font-semibold px-2.5"
-              onClick={() => applyPreset('attacking')}
-            >
-              Attacking
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs font-semibold px-2.5"
-              onClick={() => applyPreset('balanced')}
-            >
-              Balanced
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs font-semibold px-2.5"
-              onClick={() => applyPreset('defensive')}
-            >
-              Defensive
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* SVG Interactive Ground */}
-      <div className="relative mx-auto w-full max-w-[420px] aspect-square rounded-3xl border-2 border-[#294237] bg-[#0B1F19] p-2 shadow-2xl overflow-hidden select-none">
-        <svg
-          viewBox="0 0 400 400"
-          className="w-full h-full"
-          style={{ touchAction: 'manipulation' }}
-        >
-          {/* Ground Turf Background */}
-          <rect width="400" height="400" fill="#0B1F19" />
-
-          {/* Grass concentric mowing stripes effect */}
-          <circle cx="200" cy="200" r="185" fill="#0E241E" />
-          <circle cx="200" cy="200" r="150" fill="#0B1F19" />
-          <circle cx="200" cy="200" r="120" fill="#0E241E" />
-
-          {/* Oval Boundary Rope */}
-          <ellipse
-            cx="200"
-            cy="200"
-            rx="188"
-            ry="178"
-            fill="none"
-            stroke="#294237"
-            strokeWidth="3"
-            strokeDasharray="6 3"
-          />
-
-          {/* 30-Yard Inner Circle (Field Restriction) */}
-          <ellipse
-            cx="200"
-            cy="200"
-            rx="105"
-            ry="95"
-            fill="none"
-            stroke="#B7F34B"
-            strokeWidth="1.5"
-            strokeDasharray="4 4"
-            opacity="0.5"
-          />
-
-          {/* Central 22-Yard Pitch */}
-          <rect
-            x="184"
-            y="125"
-            width="32"
-            height="150"
-            rx="2"
-            fill="#142D25"
-            stroke="#294237"
-            strokeWidth="1.5"
-          />
-
-          {/* Pitch Creases */}
-          {/* Bowling Crease (Top / North) */}
-          <line x1="178" y1="140" x2="222" y2="140" stroke="#A2B5AA" strokeWidth="1.5" />
-          {/* Batting Crease (Popping Crease) */}
-          <line x1="178" y1="148" x2="222" y2="148" stroke="#F5F7F4" strokeWidth="2" />
-
-          {/* Bowling Crease (Bottom / South) */}
-          <line x1="178" y1="260" x2="222" y2="260" stroke="#A2B5AA" strokeWidth="1.5" />
-          {/* Batting Crease (Popping Crease) */}
-          <line x1="178" y1="252" x2="222" y2="252" stroke="#F5F7F4" strokeWidth="2" />
-
-          {/* Stumps / Wickets */}
-          <circle cx="196" cy="140" r="1.5" fill="#B7F34B" />
-          <circle cx="200" cy="140" r="1.5" fill="#B7F34B" />
-          <circle cx="204" cy="140" r="1.5" fill="#B7F34B" />
-
-          <circle cx="196" cy="260" r="1.5" fill="#B7F34B" />
-          <circle cx="200" cy="260" r="1.5" fill="#B7F34B" />
-          <circle cx="204" cy="260" r="1.5" fill="#B7F34B" />
-
-          {/* Off / Leg Side Annotations */}
-          <text x="360" y="204" fill="#A2B5AA" fontSize="10" opacity="0.6" textAnchor="end" fontWeight="bold">
-            OFF
-          </text>
-          <text x="40" y="204" fill="#A2B5AA" fontSize="10" opacity="0.6" textAnchor="start" fontWeight="bold">
-            LEG
-          </text>
-
-          {/* Standard Target Position Anchors (Clickable Ghost Targets) */}
-          {canEdit &&
-            selectedPlayerId &&
-            STANDARD_FIELD_POSITIONS.map((pos) => {
-              const cx = pos.x * 400;
-              const cy = pos.y * 400;
-              return (
-                <g
-                  key={pos.name}
-                  onClick={() => handlePositionClick(pos)}
-                  className="cursor-pointer group"
-                >
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r="12"
-                    fill="#142D25"
-                    stroke="#B7F34B"
-                    strokeWidth="1.5"
-                    strokeDasharray="2 2"
-                    className="hover:fill-primary/30 transition-all"
-                  />
-                  <text
-                    x={cx}
-                    y={cy + 18}
-                    fill="#F5F7F4"
-                    fontSize="7"
-                    textAnchor="middle"
-                    className="pointer-events-none opacity-80"
-                  >
-                    {pos.name}
-                  </text>
-                </g>
-              );
-            })}
-
-          {/* Assigned Player Markers */}
-          {assignments.map((item) => {
-            const player = fieldingTeam.find((p) => p.user_id === item.playerId);
-            if (!player) return null;
-            const cx = item.x * 400;
-            const cy = item.y * 400;
-            const isSelected = selectedPlayerId === item.playerId;
-            const isWk = item.positionName === 'Wicketkeeper';
-            const isBowler = item.positionName === 'Bowler';
-
-            return (
-              <g
-                key={item.playerId}
-                onClick={() => canEdit && setSelectedPlayerId(item.playerId)}
-                className={canEdit ? 'cursor-pointer group' : ''}
-              >
-                {/* Outer Glow on selection */}
-                {isSelected && (
-                  <circle cx={cx} cy={cy} r="18" fill="none" stroke="#B7F34B" strokeWidth="2.5" />
-                )}
-
-                {/* Player Token Circle */}
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r="13"
-                  fill={isWk ? '#0284c7' : isBowler ? '#ea580c' : '#142D25'}
-                  stroke={isSelected ? '#B7F34B' : '#294237'}
-                  strokeWidth="2"
-                  className="transition-transform group-hover:scale-110"
-                />
-
-                {/* Initial inside token */}
-                <text
-                  x={cx}
-                  y={cy + 4}
-                  fill="#F5F7F4"
-                  fontSize="9"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  className="pointer-events-none"
-                >
-                  {player.name.substring(0, 1).toUpperCase()}
-                </text>
-
-                {/* Position and Player Name Caption */}
-                <rect
-                  x={cx - 30}
-                  y={cy + 16}
-                  width="60"
-                  height="12"
-                  rx="3"
-                  fill="#0B1F19"
-                  opacity="0.85"
-                />
-                <text
-                  x={cx}
-                  y={cy + 25}
-                  fill="#B7F34B"
-                  fontSize="7.5"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  className="pointer-events-none"
-                >
-                  {item.positionName}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* Selected Player Contextual Control / Action Panel */}
-      {selectedPlayerId && (
-        <div className="rounded-xl border border-primary/40 bg-surface p-3 space-y-2 animate-in fade-in">
-          {(() => {
-            const player = fieldingTeam.find((p) => p.user_id === selectedPlayerId);
-            const currentAssignment = assignments.find((a) => a.playerId === selectedPlayerId);
-            return (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-foreground">
-                    Selected: {player?.name}
-                  </p>
-                  <p className="text-[11px] text-primary font-medium">
-                    Position: {currentAssignment ? currentAssignment.positionName : 'Unassigned'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs text-danger hover:bg-danger/10"
-                    onClick={() => removeAssignment(selectedPlayerId)}
-                  >
-                    <X className="h-3 w-3 mr-1" /> Remove
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="h-7 text-xs"
-                    onClick={() => setSelectedPlayerId(null)}
-                  >
-                    Done
-                  </Button>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* Unassigned Fielders Selection Carousel */}
-      {canEdit && unassignedPlayers.length > 0 && (
-        <div className="rounded-xl border border-border bg-surface-subtle p-3 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-            <UserCheck className="h-3.5 w-3.5 text-primary" />
-            Unplaced Fielders ({unassignedPlayers.length})
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {unassignedPlayers.map((p) => (
-              <button
-                key={p.user_id}
-                type="button"
-                onClick={() => setSelectedPlayerId(p.user_id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all ${
-                  selectedPlayerId === p.user_id
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-surface text-foreground hover:border-primary/50'
-                }`}
-              >
-                <span>{p.name}</span>
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-muted-foreground">
-            Click a player, then tap any position marker on the ground to place them.
-          </p>
-        </div>
-      )}
-
-      {/* Save Button */}
-      {canEdit && (
-        <div className="flex justify-end pt-1">
-          <Button
-            size="sm"
-            onClick={handleSave}
-            isLoading={setFieldPositions.isPending}
-            className="bg-primary text-primary-foreground font-bold text-xs"
-          >
-            <Save className="h-3.5 w-3.5 mr-1.5" />
-            Save Team {activeSide} Field Positions
-          </Button>
-        </div>
-      )}
-    </div>
-  );
+    setSelected(null);
+  }
+  return <section aria-label="Field positions" className="space-y-4">
+    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Field placements</h3><div className="flex gap-2">{(['A','B'] as const).map(s=><Button key={s} variant={side===s?'default':'outline'} disabled={isPending} onClick={()=>{setSide(s);setSelected(null);}} aria-pressed={side===s}>Team {s}</Button>)}</div></div>
+    {canEdit && <div className="flex flex-wrap gap-2">{(Object.keys(PRESETS) as Array<keyof typeof PRESETS>).map(key=><Button key={key} variant="outline" disabled={!team.length || isPending} onClick={()=>preset(key)} className="capitalize">{key}</Button>)}</div>}
+    {!team.length && <p className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">No teams yet. Tap Auto balance or assign players.</p>}
+    <svg viewBox="0 0 100 100" role="img" aria-label={'Team '+side+' fielding ground'} className="mx-auto block w-full max-w-md rounded-2xl bg-[#0B1F19] touch-manipulation" onClick={event=>{
+      if(!selectedId)return;
+      const rect=event.currentTarget.getBoundingClientRect();
+      place('Custom spot',(event.clientX-rect.left)/rect.width*100,(event.clientY-rect.top)/rect.height*100,true);
+    }}>
+      <ellipse cx="50" cy="50" rx="46" ry="44" fill="#132E26" stroke="#B7F34B" strokeWidth=".5" />
+      <ellipse cx="50" cy="50" rx="27" ry="24" fill="none" stroke="#B7F34B" strokeDasharray="1 1" opacity=".4" />
+      <rect x="46" y="32" width="8" height="36" fill="#735D3F" rx="1" />
+      <path d="M44 36H56M44 64H56" stroke="white" strokeWidth=".6" />
+      {canEdit && selectedId && STANDARD_FIELD_POSITIONS.map(spot=><g key={spot.name} onClick={event=>{event.stopPropagation();place(spot.name,spot.x*100,spot.y*100);}} className="cursor-pointer"><circle cx={spot.x*100} cy={spot.y*100} r="3" fill="#B7F34B" fillOpacity=".3" stroke="#B7F34B" strokeWidth=".3" /><title>{spot.name}</title></g>)}
+      {positions.map(spot=>{
+        const player=team.find(p=>p.user_id===spot.player_id);if(!player)return null;
+        return <g key={spot.player_id} onClick={event=>{event.stopPropagation();if(canEdit && !isPending)setSelected(spot.player_id);}} className={canEdit?'cursor-pointer':''}>
+          <circle cx={spot.x_pos} cy={spot.y_pos} r="6" fill="transparent" />
+          <circle cx={spot.x_pos} cy={spot.y_pos} r="4" fill={selectedId===spot.player_id?'#B7F34B':'#132E26'} stroke="#B7F34B" strokeWidth=".5" />
+          <text x={spot.x_pos} y={spot.y_pos+1} textAnchor="middle" fill={selectedId===spot.player_id?'#0B1F19':'white'} fontSize="3" fontWeight="bold">{player.name.slice(0,2).toUpperCase()}</text>
+          <text x={spot.x_pos} y={Math.min(98,spot.y_pos+7)} textAnchor="middle" fill="white" fontSize="2.5">{spot.position_name}</text><title>{player.name+': '+spot.position_name}</title>
+        </g>;
+      })}
+    </svg>
+    <ul className="space-y-2">{team.map(player=>{
+      const spot=positions.find(p=>p.player_id===player.user_id);
+      return <li key={player.user_id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"><span className="min-w-0 break-words text-sm"><strong>{player.name}</strong> · {spot?.position_name || 'Not placed'}</span>
+        {canEdit && <div className="flex gap-2"><Button variant={selectedId===player.user_id?'default':'outline'} disabled={isPending} onClick={()=>setSelected(player.user_id)}>Place</Button>{spot && <Button variant="ghost" disabled={isPending} onClick={()=>setPositions(previous=>previous.filter(p=>p.player_id!==player.user_id))}>Remove</Button>}</div>}
+      </li>;
+    })}</ul>
+    {canEdit && selectedId && <div className="space-y-2"><p className="text-sm text-primary">Tap a spot on the ground or choose a position below.</p><div className="flex flex-wrap gap-2">{STANDARD_FIELD_POSITIONS.map(spot=><Button variant="outline" key={spot.name} disabled={isPending} onClick={()=>place(spot.name,spot.x*100,spot.y*100)}>{spot.name}</Button>)}</div></div>}
+    {canEdit && <div className="flex flex-wrap items-center justify-between gap-2"><p role="status" className="text-xs text-muted-foreground">{dirty?'Unsaved changes':'Field saved'}</p><Button onClick={save} disabled={!dirty} isLoading={isPending}>Save field</Button></div>}
+  </section>;
 }

@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { ListOrdered, Compass, Activity, Users2 } from 'lucide-react';
 import { Card } from '@/components/ui';
-import type { CricketGameDetail } from '../types';
+import type { CricketDraftAction, CricketGameDetail } from '../types';
 import { CricketBattingOrder } from './CricketBattingOrder';
 import { CricketBowlingPlan } from './CricketBowlingPlan';
+import { CricketFieldPositions } from './CricketFieldPositions';
 import { CricketVisualLineup } from './CricketVisualLineup';
 import { CricketSubstituteBench } from './CricketSubstituteBench';
 
-export type LineupSection = 'fielding' | 'batting' | 'bowling' | 'bench';
+export type LineupSection = 'fielding' | 'batting' | 'bowling' | 'bench' | 'visual';
 
-export function CricketLineupWorkspace({ game }: { game: CricketGameDetail }) {
+export function CricketLineupWorkspace({ game, onDraftChange }: { game: CricketGameDetail; onDraftChange?: (action: CricketDraftAction | null) => void }) {
   const [activeSection, setActiveSection] = useState<LineupSection>('fielding');
 
   const SECTIONS: { key: LineupSection; label: string; icon: typeof Compass }[] = [
+    { key: 'visual', label: 'Visual lineup', icon: Compass },
     { key: 'fielding', label: 'Fielding Ground', icon: Compass },
     { key: 'batting', label: 'Batting Order', icon: ListOrdered },
     { key: 'bowling', label: 'Bowling Plan', icon: Activity },
@@ -37,7 +39,7 @@ export function CricketLineupWorkspace({ game }: { game: CricketGameDetail }) {
             key={key}
             type="button"
             onClick={() => setActiveSection(key)}
-            className={`flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-bold transition-all ${
               activeSection === key
                 ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
@@ -51,9 +53,10 @@ export function CricketLineupWorkspace({ game }: { game: CricketGameDetail }) {
 
       {/* Section Content */}
       <div className="pt-2">
-        {activeSection === 'fielding' && <CricketVisualLineup game={game} />}
-        {activeSection === 'batting' && <CricketBattingOrder game={game} />}
-        {activeSection === 'bowling' && <CricketBowlingPlan game={game} />}
+        <div hidden={activeSection !== 'visual'}><CricketVisualLineup key={game.game_id} game={game} /></div>
+        <div hidden={activeSection !== 'fielding'}><CricketFieldPositions game={game} onDraftChange={activeSection === 'fielding' ? onDraftChange : undefined} /></div>
+        <div hidden={activeSection !== 'batting'}><CricketBattingOrder game={game} onDraftChange={activeSection === 'batting' ? onDraftChange : undefined} /></div>
+        <div hidden={activeSection !== 'bowling'}><CricketBowlingPlan key={game.game_id} game={game} /></div>
         {activeSection === 'bench' && <CricketSubstituteBench game={game} />}
       </div>
     </Card>

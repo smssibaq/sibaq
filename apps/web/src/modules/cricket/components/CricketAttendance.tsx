@@ -1,79 +1,29 @@
-import { Check, HelpCircle, X } from 'lucide-react';
-import { clsx } from 'clsx';
-import { Card } from '@/components/ui';
-import type { CricketAttendance as AttendanceStatus, CricketGameDetail } from '../types';
+﻿import { useState } from 'react';
+import { useAuth } from '@/modules/auth/auth-provider';
+import { Button, Card, ConfirmDialog } from '@/components/ui';
+import type { CricketAttendance as Status, CricketGameDetail } from '../types';
 import { useSetAttendance } from '../api';
 
-const OPTIONS: { value: AttendanceStatus; label: string; Icon: typeof Check }[] = [
-  { value: 'playing', label: 'Playing', Icon: Check },
-  { value: 'maybe', label: 'Maybe', Icon: HelpCircle },
-  { value: 'not_playing', label: "Can't", Icon: X },
-];
-
-export function CricketAttendance({ game }: { game: CricketGameDetail }) {
-  const setAttendance = useSetAttendance(game.game_id);
-
-  const playing = game.players.filter((p) => p.attendance_status === 'playing').length;
-  const maybe = game.players.filter((p) => p.attendance_status === 'maybe').length;
-  const closed = game.status === 'completed' || game.status === 'cancelled';
-  const full = playing >= game.capacity;
-  const pct = Math.min(100, Math.round((playing / game.capacity) * 100));
-
-  return (
-    <Card className="p-4 space-y-4">
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between gap-2">
-          <p className={clsx('text-sm font-semibold', full ? 'text-success' : 'text-foreground')}>
-            {playing}/{game.capacity} confirmed
-          </p>
-          <span className="text-xs text-muted-foreground shrink-0">{maybe} maybe</span>
-        </div>
-        <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-          <div
-            className={clsx('h-full rounded-full transition-all', full ? 'bg-success' : 'bg-primary')}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-muted-foreground mb-2">Your RSVP</p>
-        <div className="grid grid-cols-3 gap-2">
-          {OPTIONS.map(({ value, label, Icon }) => {
-            const active = game.my_status === value;
-            const blocked = closed || (value === 'playing' && full && game.my_status !== 'playing');
-            return (
-              <button
-                key={value}
-                type="button"
-                disabled={blocked || setAttendance.isPending}
-                onClick={() => !active && setAttendance.mutate(value)}
-                aria-pressed={active}
-                className={clsx(
-                  'flex h-12 min-h-control flex-col items-center justify-center gap-0.5 rounded-lg border text-xs font-semibold transition-colors',
-                  'disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                  active
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-surface text-foreground border-border hover:bg-surface-subtle'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        {full && game.my_status !== 'playing' && !closed && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            All {game.capacity} spots are taken. Pick Maybe to stay in the loop.
-          </p>
-        )}
-        {closed && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            This game is {game.status}. RSVPs are closed.
-          </p>
-        )}
-      </div>
-    </Card>
-  );
+export function CricketAttendance({game,compact=false}:{game:CricketGameDetail;compact?:boolean}){
+  const mutation=useSetAttendance(game.game_id);
+  const {user}=useAuth();
+  const [confirm,setConfirm]=useState<Status|null>(null);
+  const playing=game.players.filter(p=>p.attendance_status==='playing').length;
+  const current=game.players.find(p=>p.user_id===user?.id);
+  const closed=game.status!=='scheduled';
+  const full=playing>=game.capacity && game.my_status!=='playing';
+  function choose(status:Status){
+    if(closed || mutation.isPending || game.my_status===status)return;
+    if(game.my_status==='playing' && current?.team_side && status!=='playing'){setConfirm(status);return;}
+    mutation.mutate(status);
+  }
+  // Squad viewers must become game members before changing their RSVP.
+  // The same mutation handles both RPC errors and refreshes all related queries.
+  const content=<>
+    {!compact && <div className="space-y-2"><p className="text-sm font-semibold">{playing}/{game.capacity} confirmed</p><div role="progressbar" aria-label="Confirmed players" aria-valuenow={playing} aria-valuemax={game.capacity} aria-valuemin={0} className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full bg-primary" style={{width:Math.min(100,playing/game.capacity*100)+'%'}} /></div></div>}
+    <div className="grid grid-cols-3 gap-2">{([{value:'playing',label:'Playing'},{value:'maybe',label:'Maybe'},{value:'not_playing',label:'Not playing'}] as const).map(option=><Button key={option.value} variant={game.my_status===option.value?'default':'outline'} aria-pressed={game.my_status===option.value} disabled={closed || mutation.isPending || option.value==='playing' && full} onClick={()=>choose(option.value)} className="min-h-11 px-2 text-xs sm:text-sm">{option.value==='playing' && full?'Full':option.label}</Button>)}</div>
+    {!compact && full && !closed && <p className="text-xs text-muted-foreground">Full · Pick Maybe to stay in the loop.</p>}
+    <ConfirmDialog isOpen={confirm!==null && !closed} onClose={()=>setConfirm(null)} title="Change attendance?" message={"You'll be removed from Team "+current?.team_side+'. Your batting slot and field placement will also be cleared.'} confirmText="Change RSVP" isLoading={mutation.isPending} onConfirm={()=>{if(confirm)mutation.mutate(confirm,{onSettled:()=>setConfirm(null)});}} />
+  </>;
+  return compact?<div className="space-y-2">{content}</div>:<Card className="space-y-4 p-4"><h2 className="font-bold">Your RSVP</h2>{content}</Card>;
 }

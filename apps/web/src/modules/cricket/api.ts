@@ -82,7 +82,12 @@ function useGameMutation<T>(id:string,fn:(variables:T)=>Promise<unknown>,success
   });
 }
 export function useSetAttendance(id:string){
-  return useGameMutation<CricketAttendance>(id,status=>cricketApi.setAttendance(id,status));
+  const client=useQueryClient();
+  return useGameMutation<CricketAttendance>(id,async status=>{
+    const game=client.getQueryData<CricketGameDetail>(cricketKeys.detail(id));
+    if(game?.my_status===null)await cricketApi.joinByCode(game.invite_code);
+    await cricketApi.setAttendance(id,status);
+  });
 }
 export function useSetTeam(id:string){
   return useGameMutation<{userId:string;side:CricketSide|null}>(id,({userId,side})=>cricketApi.setTeam(id,userId,side));
