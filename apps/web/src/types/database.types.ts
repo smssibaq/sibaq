@@ -42,6 +42,16 @@ export interface Database {
 
 /** Shared + football tables (platform-owned). Sport tables live in ./sports/*.db.ts */
 type CoreTables = {
+  player_sport_profiles: {
+    Row: {
+      user_id: string; sport: string;
+      skill_level: 'beginner' | 'casual' | 'intermediate' | 'advanced';
+      roles: string[]; is_primary: boolean; created_at: string; updated_at: string;
+    };
+    Insert: never;
+    Update: never;
+    Relationships: [];
+  };
   game_expenses: {
     Row: {
       id: string; game_id: string; sport: SportKey; organizer_id: string;
@@ -67,6 +77,9 @@ type CoreTables = {
       id: string;
       display_name: string | null;
       avatar_url: string | null;
+      home_area: string | null;
+      bio: string | null;
+      onboarding_completed_at: string | null;
       preferred_position: string | null;
       secondary_position: string | null;
       created_at: string;
@@ -76,6 +89,9 @@ type CoreTables = {
       id: string;
       display_name?: string | null;
       avatar_url?: string | null;
+      home_area?: string | null;
+      bio?: string | null;
+      onboarding_completed_at?: string | null;
       preferred_position?: string | null;
       secondary_position?: string | null;
       created_at?: string;
@@ -85,6 +101,9 @@ type CoreTables = {
       id?: string;
       display_name?: string | null;
       avatar_url?: string | null;
+      home_area?: string | null;
+      bio?: string | null;
+      onboarding_completed_at?: string | null;
       preferred_position?: string | null;
       secondary_position?: string | null;
       created_at?: string;
@@ -357,6 +376,10 @@ type CoreTables = {
     Row: {
       key: SportKey;
       name: string;
+      emoji: string | null;
+      role_label: string;
+      max_roles: number;
+      roles: Json;
       owner: string;
       game_table: string | null;
       confirmed_players_fn: string | null;
@@ -445,6 +468,18 @@ type CoreTables = {
 
 /** Shared + football RPCs (platform-owned). Sport RPCs live in ./sports/*.db.ts */
 type CoreFunctions = {
+  list_sports_catalog: {
+    Args: Record<string, never>;
+    Returns: Array<{
+      key: string; name: string; emoji: string | null; role_label: string;
+      max_roles: number; roles: Json; is_team_sport: boolean; is_enabled: boolean; sort_order: number;
+    }>;
+  };
+  get_player_profile: { Args: { p_user?: string }; Returns: Json };
+  save_my_profile: {
+    Args: { p_display_name: string; p_sports: Json; p_home_area?: string | null; p_bio?: string | null; p_avatar_url?: string | null };
+    Returns: Json;
+  };
   create_game_expense: {
     Args: { p_game: string; p_base_amount: number; p_extra_amount?: number; p_description?: string | null };
     Returns: string;
