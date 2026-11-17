@@ -19,7 +19,8 @@
 - **Region:** `ap-southeast-2`
 - **API URL:** `https://ctbpkaqyddceacjlujpi.supabase.co`
 - **Publishable Key:** `sb_publishable_y6T_800vf2xdiMeUTRqSaQ_zn5eySE_` (safe to expose in the frontend)
-- **Migrations:** all 13 files in `supabase/migrations/` applied; remote history versions match the filenames.
+- **Migrations:** all 15 files in `supabase/migrations/` applied; remote history versions match the filenames.
+- **Multi-sport:** shared `sports` registry + `games` table; see `docs/multisport-playbook.md`.
 
 ### Migration notes (2026-11-17)
 - Duplicate `20261116000008` version renumbered (000009–000011 shifted by one).

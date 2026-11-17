@@ -18,7 +18,7 @@ npm run dev
 
 ### Supabase
 
-The apps point at Supabase project `ctbpkaqyddceacjlujpi` (`https://ctbpkaqyddceacjlujpi.supabase.co`, region ap-southeast-2). All 13 migrations in `supabase/migrations/` are applied there and the remote migration history matches the file versions, so `supabase db push` only sends new files.
+The apps point at Supabase project `ctbpkaqyddceacjlujpi` (`https://ctbpkaqyddceacjlujpi.supabase.co`, region ap-southeast-2). All migrations in `supabase/migrations/` (15 so far) are applied there and the remote migration history matches the file versions, so `supabase db push` only sends new files.
 
 To use a different project, change `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `apps/web/.env.local` and run:
 

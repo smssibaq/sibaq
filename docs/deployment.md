@@ -6,7 +6,7 @@ ApexBuild is designed to deploy to **two independent Vercel projects** and a sin
 1. Create a project at [database.new](https://database.new).
 2. Apply every file in `supabase/migrations/` in filename order. The easiest way is the CLI:
    `supabase link --project-ref <ref>` then `supabase db push`.
-   (The current project, `ctbpkaqyddceacjlujpi`, already has all 13 applied.)
+   (The current project, `ctbpkaqyddceacjlujpi`, already has them all applied.)
 3. Go to **Authentication -> URL Configuration**:
    - **Site URL**: `https://<your-web-app>.vercel.app` (or `http://localhost:5173` locally)
    - **Redirect URLs**:
