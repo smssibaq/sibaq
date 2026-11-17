@@ -9,7 +9,6 @@ import { formatInTimezone } from '@/lib/dates';
 import { cricketErrorMessage, useCricketGame, useSetStatus } from '../api';
 import type { CricketDraftAction, CricketStatus } from '../types';
 import { CricketAttendance } from '../components/CricketAttendance';
-import { CricketTeamManager } from '../components/CricketTeamManager';
 import { CricketToss } from '../components/CricketToss';
 import { CricketLineupWorkspace } from '../components/CricketLineupWorkspace';
 import { CricketResult } from '../components/CricketResult';
@@ -24,13 +23,13 @@ export function CricketGamePage({gameId}:{gameId:string}){
   const [now,setNow]=useState(Date.now);
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[]);
   const back=<Button variant="ghost" onClick={()=>go(cricketPaths.hub)}>Back to cricket games</Button>;
-  if(query.isLoading)return <div role="status" aria-label="Loading cricket game" className="mx-auto max-w-2xl space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-28 w-full" /><Skeleton className="h-64 w-full" /></div>;
+  if(query.isLoading)return <div role="status" aria-label="Loading cricket game" className="mx-auto max-w-5xl space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-28 w-full" /><Skeleton className="h-64 w-full" /></div>;
   if(query.error)return <div className="space-y-4">{back}<ErrorState message={cricketErrorMessage(query.error)} onRetry={()=>{void query.refetch();}} isRetrying={query.isRefetching} /></div>;
   const game=query.data;
   if(!game || !gameId)return <EmptyState title="Game not found" description="This cricket game is unavailable." actionText="Back to games" onAction={()=>go(cricketPaths.hub)} />;
   const closed=game.status!=='scheduled';
   const canSeeShared=game.is_organizer || game.my_status==='playing';
-  return <div className="mx-auto max-w-2xl space-y-4 pb-6">{back}
+  return <div className="mx-auto max-w-5xl space-y-4 pb-6">{back}
     <Card className="space-y-4 p-4 sm:p-6"><div className="flex items-start justify-between gap-3"><div className="min-w-0 space-y-2"><h1 className="break-words text-xl font-black sm:text-2xl">{game.title}</h1><div className="flex flex-wrap gap-2"><Badge variant="outline">{formatFormat(game.players_per_side,game.overs_per_innings)}</Badge><Badge variant={game.status==='cancelled'?'danger':game.status==='completed'?'secondary':'success'} className="capitalize">{game.status}</Badge>{game.is_organizer && <Badge variant="outline">Organizer</Badge>}</div></div>
       {game.is_organizer && <div className="relative shrink-0"><Button variant="outline" aria-expanded={actionsOpen} aria-controls="cricket-organizer-actions" disabled={status.isPending} onClick={()=>setActionsOpen(!actionsOpen)}>Actions</Button>
         {actionsOpen && <div id="cricket-organizer-actions" className="absolute right-0 z-30 mt-2 w-56 space-y-2 rounded-xl border border-border bg-surface p-3 shadow-lg">{([{value:'completed',label:'Mark completed'},{value:'cancelled',label:'Cancel game'},{value:'scheduled',label:'Reopen'}] as const).filter(action=>action.value!==game.status).map(action=><Button key={action.value} variant="outline" className="w-full justify-start" onClick={()=>{setActionsOpen(false);setConfirm(action.value);}}>{action.label}</Button>)}</div>}
@@ -38,7 +37,6 @@ export function CricketGamePage({gameId}:{gameId:string}){
     </div><div className="space-y-1 text-sm text-muted-foreground"><p>{formatInTimezone(game.starts_at)}</p>{game.venue && <p className="break-words">{game.venue}</p>}<p>{game.capacity} players · {game.players_per_side} per side</p></div>{game.notes && <p className="whitespace-pre-wrap break-words border-t border-border pt-3 text-sm">{game.notes}</p>}</Card>
     {closed && <p role="status" className="rounded-lg border border-border bg-surface-subtle p-4 text-sm">This game is {game.status}. Attendance and lineup editing are closed.</p>}
     <CricketAttendance game={game} />
-    <CricketTeamManager game={game} />
     <CricketToss game={game} />
     <div id="cricket-lineup" className="scroll-mt-4"><CricketLineupWorkspace key={gameId} game={game} onDraftChange={setDraftAction} /></div>
     <CricketResult key={gameId} game={game} />

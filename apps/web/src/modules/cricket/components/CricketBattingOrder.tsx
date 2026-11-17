@@ -5,8 +5,10 @@ import type { CricketDraftAction, CricketGameDetail, CricketSide } from '../type
 import { useSetBattingOrder } from '../api';
 import { useLineupDraft, usePublishDraft } from '../lineup-draft';
 
-export function CricketBattingOrder({game,onDraftChange}:{game:CricketGameDetail;onDraftChange?:(action:CricketDraftAction|null)=>void}){
-  const [side,setSide]=useState<CricketSide>('A');
+export function CricketBattingOrder({game,onDraftChange,side:controlledSide,onSideChange}:{game:CricketGameDetail;onDraftChange?:(action:CricketDraftAction|null)=>void;side?:CricketSide;onSideChange?:(side:CricketSide)=>void}){
+  const [localSide,setLocalSide]=useState<CricketSide>('A');
+  const side=controlledSide ?? localSide;
+  const setSide=onSideChange ?? setLocalSide;
   const {mutate,isPending}=useSetBattingOrder(game.game_id);
   const team=useMemo(()=>game.players.filter(p=>p.attendance_status==='playing' && p.team_side===side).sort((a,b)=>a.joined_at.localeCompare(b.joined_at)),[game.players,side]);
   const saved=useMemo(()=>game.batting_order.filter(s=>s.team_side===side && team.some(p=>p.user_id===s.player_id)).sort((a,b)=>a.batting_position-b.batting_position),[game.batting_order,side,team]);
@@ -25,7 +27,7 @@ export function CricketBattingOrder({game,onDraftChange}:{game:CricketGameDetail
   }
   return <section className="space-y-4" aria-label="Batting order">
     <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Batting order</h3>
-      <div className="flex gap-2">{(['A','B'] as const).map(s=><Button key={s} variant={side===s?'default':'outline'} onClick={()=>setSide(s)} disabled={isPending} aria-pressed={side===s}>Team {s}</Button>)}</div>
+      {controlledSide===undefined && <div className="flex gap-2">{(['A','B'] as const).map(s=><Button key={s} variant={side===s?'default':'outline'} onClick={()=>setSide(s)} disabled={isPending} aria-pressed={side===s}>Team {s}</Button>)}</div>}
     </div>
     {!team.length && <p className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">No batters on Team {side}. Assign confirmed players to this side first.</p>}
     <ol className="space-y-2">{order.map((id,index)=>{

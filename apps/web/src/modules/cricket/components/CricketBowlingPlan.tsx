@@ -9,9 +9,11 @@ function validPlans(value:unknown):value is BowlingPlans{
   if(!value || typeof value!=='object')return false;
   return (['A','B'] as const).every(side=>side in value && Array.isArray((value as BowlingPlans)[side]) && (value as BowlingPlans)[side].every(s=>s && typeof s.playerId==='string' && Number.isInteger(s.plannedOvers) && s.plannedOvers>0));
 }
-export function CricketBowlingPlan({game}:{game:CricketGameDetail}){
+export function CricketBowlingPlan({game,side:controlledSide,onSideChange}:{game:CricketGameDetail;side?:CricketSide;onSideChange?:(side:CricketSide)=>void}){
   const key='cricket:'+game.game_id+':bowling';
-  const [side,setSide]=useState<CricketSide>('A');
+  const [localSide,setLocalSide]=useState<CricketSide>('A');
+  const side=controlledSide ?? localSide;
+  const setSide=onSideChange ?? setLocalSide;
   const [plans,setPlans]=useState<BowlingPlans>(()=>readCricketDeviceValue(key,validPlans) ?? {A:[],B:[]});
   const [saved,setSaved]=useState(()=>readCricketDeviceValue(key,validPlans)!==null);
   const {toast}=useToast();
@@ -28,7 +30,7 @@ export function CricketBowlingPlan({game}:{game:CricketGameDetail}){
     if(!validPlans(clean) || game.overs_per_innings>0 && Object.values(clean).some(slots=>slots.reduce((sum,slot)=>sum+slot.plannedOvers,0)>game.overs_per_innings)){toast.error('Check bowling plan','Both sides must use valid overs within the innings limit.');return;}
     if(saveCricketDeviceValue(key,clean)){setSaved(true);toast.success('Saved on this device');}else toast.error('Could not save','Device storage is unavailable.');
   }
-  return <section className="space-y-4" aria-label="Bowling plan"><div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-bold">Bowling plan</h3><p role="status" className="text-xs text-muted-foreground">{saved?'Saved on this device':'Device only · Unsaved changes'}</p></div><div className="flex gap-2">{(['A','B'] as const).map(s=><Button key={s} variant={side===s?'default':'outline'} onClick={()=>setSide(s)} aria-pressed={side===s}>Team {s}</Button>)}</div></div>
+  return <section className="space-y-4" aria-label="Bowling plan"><div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-bold">Bowling plan</h3><p role="status" className="text-xs text-muted-foreground">{saved?'Saved on this device':'Device only · Unsaved changes'}</p></div>{controlledSide===undefined && <div className="flex gap-2">{(['A','B'] as const).map(s=><Button key={s} variant={side===s?'default':'outline'} onClick={()=>setSide(s)} aria-pressed={side===s}>Team {s}</Button>)}</div>}</div>
     <p className="text-sm text-muted-foreground">{total} overs planned{game.overs_per_innings>0?' / '+game.overs_per_innings+' overs':' · No over limit'}</p>
     {!plan.length && <p className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">No bowling plan saved for Team {side} on this device.</p>}
     <ol className="space-y-2">{plan.map((slot,index)=>{
