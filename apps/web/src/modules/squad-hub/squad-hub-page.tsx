@@ -646,7 +646,7 @@ export function SquadHubPage() {
                       className="p-3.5 rounded-xl border border-border bg-surface flex items-center justify-between shadow-sm"
                     >
                       <div className="flex items-center gap-3">
-                        <Avatar
+                        <Avatar userId={m.userId}
                           src={m.profile?.avatarUrl || undefined}
                           fallback={displayName}
                           className="h-9 w-9 text-xs font-bold border border-primary/30"

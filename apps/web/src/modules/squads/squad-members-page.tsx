@@ -267,7 +267,7 @@ export function SquadMembersPage() {
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 hover:bg-surface-subtle transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Avatar
+                        <Avatar userId={member.userId}
                           src={member.profile?.avatarUrl}
                           fallback={member.profile?.displayName || 'P'}
                           size="md"
@@ -405,7 +405,7 @@ export function SquadMembersPage() {
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 hover:bg-surface-subtle transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Avatar
+                      <Avatar userId={member.userId}
                         src={member.profile?.avatarUrl}
                         fallback={member.profile?.displayName || 'P'}
                         size="md"

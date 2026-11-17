@@ -1,3 +1,4 @@
+import { compressAvatarImage } from '../images/compress-avatar';
 import { supabase, isSupabaseConfigured } from './client';
 import { normalizeError, AppError } from '../errors';
 
@@ -176,8 +177,9 @@ export async function uploadAvatarImage(file: File): Promise<string> {
     throw new Error(validation.error);
   }
 
+  const optimizedFile = await compressAvatarImage(file);
   if (!isSupabaseConfigured) {
-    return URL.createObjectURL(file);
+    return URL.createObjectURL(optimizedFile);
   }
 
   const {
@@ -189,14 +191,14 @@ export async function uploadAvatarImage(file: File): Promise<string> {
     throw new Error('Please log in to upload a profile image.');
   }
 
-  const extension = file.name.split('.').pop()?.toLowerCase();
+  const extension = optimizedFile.name.split('.').pop()?.toLowerCase();
   const filePath = `${user.id}/avatar-${crypto.randomUUID()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(filePath, file, {
+    .upload(filePath, optimizedFile, {
       upsert: false,
-      contentType: file.type || `image/${extension === 'jpg' ? 'jpeg' : extension}`,
+      contentType: optimizedFile.type || `image/${extension === 'jpg' ? 'jpeg' : extension}`,
     });
 
   if (uploadError) {

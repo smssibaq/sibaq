@@ -1,4 +1,5 @@
 import React from 'react';
+import { Avatar } from '@/components/ui/avatar';
 import type { FormationPlayer } from '../types';
 import { inferTacticalZone, getTacticalZoneStyle } from '../presets';
 
@@ -31,12 +32,6 @@ export const PlayerToken = React.memo(function PlayerToken({
 
   // Compute initials from display name
   const name = player.displayName || 'Player';
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'P';
 
   return (
     <div
@@ -79,17 +74,7 @@ export const PlayerToken = React.memo(function PlayerToken({
             : 'border-white/50 dark:border-[#234E42] bg-surface text-foreground hover:border-primary/80'
         } ${zoneStyle.cardGlow}`}
       >
-        {player.avatarUrl ? (
-          <img
-            src={player.avatarUrl}
-            alt={name}
-            className="h-full w-full rounded-full object-cover pointer-events-none"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-b from-emerald-700 to-emerald-950 dark:from-[#1B3D33] dark:to-[#0E241E] text-xs sm:text-sm font-black text-white">
-            {initials}
-          </div>
-        )}
+        <Avatar userId={player.userId} src={player.avatarUrl} alt={name} fallback={name} className="pointer-events-none h-full w-full border-0 bg-gradient-to-b from-emerald-700 to-emerald-950 text-sm font-black text-white" />
 
         {/* Tactical Role Badge pill on bottom */}
         <span

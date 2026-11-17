@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/modules/auth/auth-provider';
 import { useToast } from '@/components/ui/toast';
-import { makeProfileDraft, profileApi, profileErrorMessage, useSportsCatalog, validateAbout } from './api';
+import { makeProfileDraft, profileApi, profileErrorMessage, refreshPlayerPhotos, useSportsCatalog, validateAbout } from './api';
 
 export function useProfileEditor() {
   const {profile,user,refreshProfile}=useAuth();
@@ -10,9 +10,10 @@ export function useProfileEditor() {
   const [uploading,setUploading]=useState(false);
   const catalog=useSportsCatalog();
   const {toast}=useToast();
+  const queryClient=useQueryClient();
   const mutation=useMutation({
     mutationFn:()=>profileApi.save(draft),
-    onSuccess:async()=>{await refreshProfile();toast.success('Profile saved');},
+    onSuccess:async()=>{await refreshProfile();void refreshPlayerPhotos(queryClient);toast.success('Profile saved');},
     onError:error=>toast.error('Could not save profile',profileErrorMessage(error)),
   });
   async function save():Promise<boolean> {

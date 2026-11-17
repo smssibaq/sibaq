@@ -1,10 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Avatar } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { uploadAvatarImage } from '@/lib/supabase/storage';
-import { profileErrorMessage } from '../api';
+import { profileErrorMessage, refreshPlayerPhotos } from '../api';
 import type { ProfileDraft } from '../types';
 
 export function AboutStep({draft,onChange,disabled,onUploading}: {
@@ -13,6 +14,7 @@ export function AboutStep({draft,onChange,disabled,onUploading}: {
 }) {
   const [uploading,setUploading]=useState(false);
   const {toast}=useToast();
+  const queryClient=useQueryClient();
   return <section className="space-y-5" aria-label="About you">
     <div className="flex items-center gap-4">
       <Avatar src={draft.avatarUrl} fallback={draft.displayName || 'P'} size="xl" />
@@ -21,11 +23,11 @@ export function AboutStep({draft,onChange,disabled,onUploading}: {
           aria-label="Upload avatar" onChange={async event=>{
             const file=event.target.files?.[0]; event.target.value=''; if(!file)return;
             setUploading(true);onUploading(true);
-            try { const url=await uploadAvatarImage(file);onChange({...draft,avatarUrl:url});toast.success('Avatar uploaded'); }
+            try { const url=await uploadAvatarImage(file);onChange({...draft,avatarUrl:url});await queryClient.invalidateQueries({queryKey:['player-profile']});void refreshPlayerPhotos(queryClient);toast.success('Photo optimized and uploaded'); }
             catch(error){toast.error('Upload failed',profileErrorMessage(error));}
             finally{setUploading(false);onUploading(false);}
           }} />
-        <p className="text-xs text-muted-foreground">{uploading?'Uploading...':'JPG, PNG or WebP, up to 2 MB'}</p>
+        <p className="text-xs text-muted-foreground">{uploading?'Uploading...':'JPG, PNG or WebP, up to 2 MB · resized and compressed automatically'}</p>
       </label>
     </div>
     <label className="block space-y-1 text-sm font-medium">Display name
