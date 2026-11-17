@@ -90,7 +90,14 @@ export function storagePathFromPublicUrl(url: string | null | undefined, bucket:
   return decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
 }
 
+class SquadImageError extends Error {}
+function squadImageFailure(stage: string, error: unknown): Error {
+ const detail = error && typeof error === "object" && "message" in error ? String(error.message) : "Unknown error";
+ return new SquadImageError(`${stage}: ${detail}. If access is denied for the owner, run squad_images_permission_fix.sql.`);
+}
+
 export function imageErrorMessage(error: unknown): string {
+  if (error instanceof SquadImageError) return error.message;
   const raw = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String((error as { message: unknown }).message) : '';
   const code = typeof error === 'object' && error && 'code' in error ? String((error as { code: unknown }).code) : '';
   if (/row-level security|42501|forbidden|not authorized|unauthorized/i.test(`${raw} ${code}`)) {
@@ -173,20 +180,24 @@ export async function removeMyAvatar(): Promise<void> {
 
 export async function setSquadImage(squadId: string, image: PreparedImage): Promise<string> {
   requireClient();
-  const { data: current } = await supabase.from('squads').select('image_url').eq('id', squadId).maybeSingle();
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw new SquadImageError('Please sign in again before changing the squad logo.');
+  const { data: current, error: readError } = await supabase.from('squads').select('image_url').eq('id', squadId).maybeSingle();
+  if (readError) throw squadImageFailure('Read squad logo', readError);
+  if (!current) throw new SquadImageError('Squad is not accessible to your account.');
   const previousPath = storagePathFromPublicUrl(current?.image_url, SQUAD_IMAGE_BUCKET);
 
   const path = `squads/${squadId}/${crypto.randomUUID()}.${image.ext}`;
   const { error: uploadError } = await supabase.storage
     .from(SQUAD_IMAGE_BUCKET)
     .upload(path, image.blob, { contentType: image.contentType, upsert: false, cacheControl: '31536000' });
-  if (uploadError) throw uploadError; // storage policy rejects non owner/admin here
+  if (uploadError) throw squadImageFailure('Upload to squad-images/squads/' + squadId, uploadError); // storage policy rejects non owner/admin here
 
   const { data } = supabase.storage.from(SQUAD_IMAGE_BUCKET).getPublicUrl(path);
   const { error: dbError } = await supabase.rpc('set_squad_image', { p_squad: squadId, p_image_url: data.publicUrl });
   if (dbError) {
     await removeObjectQuietly(SQUAD_IMAGE_BUCKET, path);
-    throw dbError;
+    throw squadImageFailure('Save squads.image_url via set_squad_image', dbError);
   }
 
   // Only delete files from this same squad's folder.
@@ -198,11 +209,15 @@ export async function setSquadImage(squadId: string, image: PreparedImage): Prom
 
 export async function removeSquadImage(squadId: string): Promise<void> {
   requireClient();
-  const { data: current } = await supabase.from('squads').select('image_url').eq('id', squadId).maybeSingle();
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw new SquadImageError('Please sign in again before changing the squad logo.');
+  const { data: current, error: readError } = await supabase.from('squads').select('image_url').eq('id', squadId).maybeSingle();
+  if (readError) throw squadImageFailure('Read squad logo', readError);
+  if (!current) throw new SquadImageError('Squad is not accessible to your account.');
   const previousPath = storagePathFromPublicUrl(current?.image_url, SQUAD_IMAGE_BUCKET);
 
   const { error } = await supabase.rpc('set_squad_image', { p_squad: squadId, p_image_url: null });
-  if (error) throw error;
+  if (error) throw squadImageFailure('Remove squad logo via set_squad_image', error);
   if (previousPath && previousPath.startsWith(`squads/${squadId}/`)) {
     await removeObjectQuietly(SQUAD_IMAGE_BUCKET, previousPath);
   }
