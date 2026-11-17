@@ -74,10 +74,13 @@ export interface UIState {
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
 
-  // Modals
+  // Modals & Drawers
   activeModal: string | null;
   openModal: (modalId: string) => void;
   closeModal: () => void;
+  isSportDrawerOpen: boolean;
+  openSportDrawer: () => void;
+  closeSportDrawer: () => void;
 
   // Formation & Match UI drafts
   selectedTeamSide: 'A' | 'B' | 'single';
@@ -140,10 +143,13 @@ export const useUIStore = create<UIState>((set) => ({
       return { theme: nextTheme };
     }),
 
-  // Modals
+  // Modals & Drawers
   activeModal: null,
   openModal: (modalId) => set({ activeModal: modalId }),
   closeModal: () => set({ activeModal: null }),
+  isSportDrawerOpen: false,
+  openSportDrawer: () => set({ isSportDrawerOpen: true }),
+  closeSportDrawer: () => set({ isSportDrawerOpen: false }),
 
   // Lineup / Formation Drafts
   selectedTeamSide: 'A',

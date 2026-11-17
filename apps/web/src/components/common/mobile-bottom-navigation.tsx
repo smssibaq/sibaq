@@ -17,9 +17,11 @@ import { matchApi } from '@/modules/matches/api';
 import { queryKeys } from '@/infrastructure/query-keys';
 import { BrandLogo } from './brand-logo';
 import { activeSportForPath } from './sport-switcher';
+import { useUIStore } from '@/stores/ui-store';
 
 export function MobileBottomNavigation() {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const openSportDrawer = useUIStore((s) => s.openSportDrawer);
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
@@ -65,16 +67,7 @@ export function MobileBottomNavigation() {
 
   const handleCreateMatch = () => {
     setIsActionSheetOpen(false);
-    if (squads && squads.length > 0) {
-      // Navigate to first squad match creation or squad hub
-      navigate({
-        to: '/squads/$squadId/matches/new',
-        params: { squadId: squads[0].id },
-      });
-    } else {
-      // Guide user to create a squad first
-      navigate({ to: '/squads/new' });
-    }
+    openSportDrawer();
   };
 
   return (

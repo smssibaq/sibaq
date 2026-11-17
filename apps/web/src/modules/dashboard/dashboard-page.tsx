@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, calculateCountdown } from '@/lib/dates';
 import type { Match } from '@/types/contracts';
 import { UpcomingGames } from './upcoming-games';
+import { useUIStore } from '@/stores/ui-store';
 import {
   Shield,
   Trophy,
@@ -32,6 +33,7 @@ import {
 
 export function DashboardPage() {
   const { user, profile } = useAuth();
+  const openSportDrawer = useUIStore((s) => s.openSportDrawer);
   const [selectedSquadId, setSelectedSquadId] = useState<string>('all');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -136,15 +138,7 @@ export function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
             <Button
               className="bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary-hover min-h-[40px] sm:min-h-[44px] text-xs sm:text-sm"
-              onClick={() => {
-                if (selectedSquadId !== 'all') {
-                  window.location.href = `/squads/${selectedSquadId}/matches/new`;
-                } else if (squads.length > 0) {
-                  window.location.href = `/squads/${squads[0].id}/matches/new`;
-                } else {
-                  window.location.href = '/squads/new';
-                }
-              }}
+              onClick={openSportDrawer}
             >
               <Plus className="h-4 w-4 mr-1.5 shrink-0" />
               <span>Schedule Match</span>

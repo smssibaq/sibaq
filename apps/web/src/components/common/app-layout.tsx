@@ -22,6 +22,7 @@ import { BrandLogo } from './brand-logo';
 import { Breadcrumbs } from './breadcrumb';
 import { MobileBottomNavigation } from './mobile-bottom-navigation';
 import { SportSwitcher, activeSportForPath } from './sport-switcher';
+import { SportSelectionDrawer } from './sport-selection-drawer';
 import { squadApi } from '@/modules/squads/api';
 import { matchApi } from '@/modules/matches/api';
 import { queryKeys } from '@/infrastructure/query-keys';
@@ -125,7 +126,7 @@ function getPageBreadcrumbs(pathname: string): { section: string; title: string 
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { theme, toggleTheme, sidebarCollapsed, toggleSidebarCollapsed } = useUIStore();
+  const { theme, toggleTheme, sidebarCollapsed, toggleSidebarCollapsed, openSportDrawer } = useUIStore();
   const { user, profile, role, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -175,14 +176,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const handleScheduleMatch = () => {
     setIsQuickActionOpen(false);
-    if (squads && squads.length > 0) {
-      navigate({
-        to: '/squads/$squadId/matches/new',
-        params: { squadId: squads[0].id },
-      });
-    } else {
-      navigate({ to: '/squads/new' });
-    }
+    openSportDrawer();
   };
 
   const breadcrumbs = getPageBreadcrumbs(currentPath);
@@ -561,6 +555,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Floating Mobile Bottom Navigation */}
         <MobileBottomNavigation />
+
+        {/* Global Multi-Sport Selection Drawer */}
+        <SportSelectionDrawer />
       </div>
     </div>
   );
