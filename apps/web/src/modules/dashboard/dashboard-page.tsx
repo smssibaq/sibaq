@@ -331,15 +331,7 @@ export function DashboardPage() {
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button
-                onClick={() => {
-                  if (selectedSquadId !== 'all') {
-                    window.location.href = `/squads/${selectedSquadId}/matches/new`;
-                  } else if (squads.length > 0) {
-                    window.location.href = `/squads/${squads[0].id}/matches/new`;
-                  } else {
-                    window.location.href = '/squads/new';
-                  }
-                }}
+                onClick={openSportDrawer}
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 <span>Schedule a Match</span>

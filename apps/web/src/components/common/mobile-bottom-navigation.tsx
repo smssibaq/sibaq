@@ -331,7 +331,7 @@ export function MobileBottomNavigation() {
                     <h4 className="text-sm font-bold text-foreground">Schedule Match</h4>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {squads.length > 0
-                        ? 'Set kickoff time, venue, and 5v5/7v7 headcount'
+                        ? 'Choose your sport, venue, and game time'
                         : 'Create or join a squad first to organize matches'}
                     </p>
                   </div>

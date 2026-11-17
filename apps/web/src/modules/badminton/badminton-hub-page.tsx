@@ -2,7 +2,7 @@ import { GameLocationPicker } from '@/components/location/game-location-picker';
 import { manualLocation } from '@/components/location/location-service';
 import { useMemo, useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { Plus, X, CalendarDays } from 'lucide-react';
 import { PageHeader } from '@/components/common/page-header';
 import { LoadingState } from '@/components/common/loading-state';
@@ -26,6 +26,7 @@ import {
 
 export function BadmintonHubPage() {
   const navigate = useNavigate();
+  const searchStr = useLocation({ select: location => location.searchStr });
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [location,setLocation] = useState(manualLocation());
@@ -38,12 +39,12 @@ export function BadmintonHubPage() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'live' | 'past'>('upcoming');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (new URLSearchParams(window.location.search).get('create') === 'true') {
-        setShowForm(true);
-      }
+    if (new URLSearchParams(searchStr).get('create') === 'true') {
+      setShowForm(true);
+      // Consume the request so choosing Badminton again can reopen a closed form.
+      navigate({ to: '/badminton', search: {}, replace: true, resetScroll: false } as never);
     }
-  }, []);
+  }, [searchStr, navigate]);
 
   const [form, setForm] = useState({
     squadId: '',

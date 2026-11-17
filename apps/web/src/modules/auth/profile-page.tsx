@@ -15,23 +15,74 @@ function ProfileEditor({onDone}:{onDone:()=>void}) {
   const editor=useProfileEditor();
   const {draft,setDraft,catalog,busy,setUploading}=editor;
   async function submit(event:FormEvent){event.preventDefault();if(await editor.save())onDone();}
-  return <form onSubmit={submit} className="space-y-5">
-    <Card className="space-y-4 p-4 sm:p-6"><h2 className="text-lg font-bold">About you</h2>
-      <AboutStep draft={draft} onChange={setDraft} onUploading={setUploading} disabled={busy} />
-    </Card>
-    <Card className="space-y-4 p-4 sm:p-6"><h2 className="text-lg font-bold">Your sports</h2>
-      {catalog.isPending && <p role="status">Loading sports...</p>}
-      {catalog.isError && <div role="alert" className="space-y-3"><p className="text-sm text-danger">{profileErrorMessage(catalog.error)}</p><Button type="button" variant="outline" onClick={()=>{void catalog.refetch();}}>Retry sports catalog</Button></div>}
-      {catalog.data && <SportPicker catalog={catalog.data} value={draft.sports} onChange={sports=>setDraft({...draft,sports})} disabled={busy} />}
-    </Card>
-    {draft.sports.length>0 && catalog.data && <div className="space-y-3"><h2 className="text-lg font-bold">How you play</h2>
-      <SportPlayStyle catalog={catalog.data} value={draft.sports} onChange={sports=>setDraft({...draft,sports})} disabled={busy} />
-    </div>}
-    <footer className="sticky bottom-0 z-10 flex gap-3 border-t border-border bg-background/95 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
-      <Button type="button" variant="outline" className="min-h-11 flex-1" onClick={onDone} disabled={busy}>Cancel</Button>
-      <Button type="submit" className="min-h-11 flex-1" isLoading={busy} disabled={!catalog.data?.length || !draft.sports.length}>Save profile</Button>
-    </footer>
-  </form>;
+  return (
+    <form onSubmit={submit} className="space-y-6">
+      {/* 1. About You Section */}
+      <Card className="rounded-2xl border border-border bg-surface shadow-card p-4 sm:p-6 space-y-4">
+        <h2 className="text-base sm:text-lg font-bold text-foreground">About you</h2>
+        <AboutStep draft={draft} onChange={setDraft} onUploading={setUploading} disabled={busy} />
+      </Card>
+
+      {/* 2. Your Sports Section */}
+      <Card className="rounded-2xl border border-border bg-surface shadow-card p-4 sm:p-6 space-y-4">
+        <h2 className="text-base sm:text-lg font-bold text-foreground">Your sports</h2>
+        {catalog.isPending && <p role="status" className="text-xs text-muted-foreground animate-pulse">Loading sports catalog...</p>}
+        {catalog.isError && (
+          <div role="alert" className="space-y-3">
+            <p className="text-sm text-danger">{profileErrorMessage(catalog.error)}</p>
+            <Button type="button" variant="outline" size="sm" onClick={()=>{void catalog.refetch();}}>Retry sports catalog</Button>
+          </div>
+        )}
+        {catalog.data && (
+          <SportPicker
+            catalog={catalog.data}
+            value={draft.sports}
+            onChange={(sports)=>setDraft({...draft,sports})}
+            disabled={busy}
+          />
+        )}
+      </Card>
+
+      {/* 3. How You Play Section */}
+      {draft.sports.length > 0 && catalog.data && (
+        <div className="space-y-3.5">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-base sm:text-lg font-bold text-foreground">How you play</h2>
+            <span className="text-xs text-muted-foreground">
+              {draft.sports.length} sport{draft.sports.length > 1 ? 's' : ''} configured
+            </span>
+          </div>
+          <SportPlayStyle
+            catalog={catalog.data}
+            value={draft.sports}
+            onChange={(sports)=>setDraft({...draft,sports})}
+            disabled={busy}
+          />
+        </div>
+      )}
+
+      {/* 4. Sticky Bottom Actions Bar */}
+      <footer className="sticky bottom-20 lg:bottom-4 z-20 flex items-center gap-3 rounded-2xl border border-border bg-surface/95 p-3.5 sm:p-4 backdrop-blur-md shadow-2xl mt-8">
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-[44px] flex-1 text-xs sm:text-sm font-semibold border-border hover:bg-surface-subtle"
+          onClick={onDone}
+          disabled={busy}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          className="min-h-[44px] flex-1 bg-primary text-primary-foreground hover:bg-primary-hover text-xs sm:text-sm font-bold shadow-md transition-all"
+          isLoading={busy}
+          disabled={!catalog.data?.length || !draft.sports.length}
+        >
+          {busy ? 'Saving...' : 'Save Profile'}
+        </Button>
+      </footer>
+    </form>
+  );
 }
 
 export function ProfilePage() {

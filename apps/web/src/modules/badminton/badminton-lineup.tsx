@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation } from '@tanstack/react-query';
-import { Shuffle, Save, Pencil, MoreHorizontal } from 'lucide-react';
+import { Shuffle, Save, Pencil, MoreHorizontal, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
@@ -12,6 +12,7 @@ import { badmintonApi, type BadmintonGameDetail, type BadmintonPlayer } from './
 import { cleanLineup, confirmedPlayers, moveLineupPlayer, dropLineupPlayer, type LineupDraft } from './lineup-assignment';
 import { BadmintonPlayerMenu } from './badminton-player-menu';
 import { useBadmintonDrag } from './use-badminton-drag';
+import { fitCourtMarker } from './court-marker-layout';
 
 export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; onSaved: () => void | Promise<unknown> }) {
   const { toast } = useToast();
@@ -32,6 +33,19 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
   const [menuAnchor, setMenuAnchor] = useState({ left: 12, top: 12, right: 12, bottom: 12 });
   const courtRef = useRef<HTMLDivElement>(null);
   const benchRef = useRef<HTMLElement>(null);
+  const [courtSize, setCourtSize] = useState({ width: 220, height: 308 });
+  useLayoutEffect(() => {
+    const court = courtRef.current;
+    if (!court) return;
+    const measure = () => {
+      const { width, height } = court.getBoundingClientRect();
+      setCourtSize(previous => previous.width === width && previous.height === height ? previous : { width, height });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(court);
+    return () => observer.disconnect();
+  }, []);
   const eligibility = JSON.stringify(game.players.map(p => ({ userId: p.userId, status: p.status })));
   const state = cleanLineup(game.isOrganizer ? draft ?? saved : saved, game.players, perSide);
   const { slots } = state;
@@ -111,13 +125,14 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
     if (!player || !zone) { toast.error('Invalid drop', 'Drop inside a court half or the bench.'); return; }
     const rect = courtRef.current?.getBoundingClientRect();
     const position = zone !== 'bench' && rect ? { x: (x - rect.left) / rect.width, y: (y - rect.top) / rect.height } : undefined;
-    const next = dropLineupPlayer(state, player, zone, perSide, position);
+    const safePosition = position && zone !== 'bench' ? fitCourtMarker(position, zone, courtSize.width, courtSize.height) : undefined;
+    const next = dropLineupPlayer(state, player, zone, perSide, safePosition);
     if (!next) { toast.error('Team is full', 'Move a player to the bench first.'); return; }
     const placed = next.positions?.[id];
     if (placed && next.slots.some((other, index) => {
       if (!other || other === id) return false;
-      const point = next.positions?.[other] ?? defaultPosition(index);
-      return Math.abs(point.x - placed.x) < .2 && Math.abs(point.y - placed.y) < .13;
+      const point = fitCourtMarker(next.positions?.[other] ?? defaultPosition(index), index < perSide ? 'A' : 'B', courtSize.width, courtSize.height);
+      return Math.abs(point.x - placed.x) * courtSize.width < 70 && Math.abs(point.y - placed.y) * courtSize.height < 66;
     })) { toast.error('Position occupied', 'Choose a free position inside that court half.'); return; }
     setDraft(cleanLineup(next, game.players, perSide)); setMenuId(null); setSelected(id);
   });
@@ -154,14 +169,15 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
         {slots.map((id, index) => {
           const player = game.players.find(p => p.userId === id);
           const sideA = index < perSide;
-          const point = id && state.positions?.[id] ? state.positions[id] : defaultPosition(index);
+          const point = fitCourtMarker(id && state.positions?.[id] ? state.positions[id] : defaultPosition(index), sideA ? 'A' : 'B', courtSize.width, courtSize.height);
           const left = point.x * 100; const top = point.y * 100;
-          return <div key={index} onContextMenu={e => { if (id) openMenu(e, id); }} className="absolute w-[36%] -translate-x-1/2 -translate-y-1/2" style={{ left: `${left}%`, top: `${top}%` }}>
-            <button type="button" onDragStart={event => event.preventDefault()} onPointerDown={event => { if (id) dragging.start(event, id, game.isOrganizer && !mutation.isPending); }} style={{ touchAction: "pan-y", opacity: dragging.drag?.id === id ? .3 : 1 }} disabled={!game.isOrganizer || mutation.isPending} onClick={event => { if (id) showPlayerMenu(id, event.currentTarget); else place(index); }} aria-haspopup={id ? "menu" : undefined} aria-expanded={Boolean(id && menuId === id)} aria-label={`${sideA ? 'Side A' : 'Side B'} position ${index % perSide + 1}: ${player?.displayName ?? 'Empty'}`} aria-pressed={Boolean(id && selected === id)} className={`flex min-h-16 w-full cursor-grab select-none flex-col items-center gap-1 rounded-xl p-1 transition ${id && selected === id ? 'bg-primary/20 ring-2 ring-primary' : editing ? 'hover:bg-white/10' : ''}`}>
-              {player ? <Avatar userId={player.userId} src={player.avatarUrl} alt={player.displayName} fallback={player.displayName} className={`h-12 w-12 border-2 shadow-lg ${sideA ? 'border-primary' : 'border-white'}`} /> : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-white/60 text-xl text-white">+</span>}
-              <span className="max-w-full truncate rounded bg-[#0b1f19]/90 px-2 py-1 text-xs font-semibold text-white">{player?.displayName ?? (editing ? 'Assign player' : 'Awaiting player')}</span>
+          return <div key={index} onContextMenu={e => { if (id) openMenu(e, id); }} className="absolute z-20 w-16 -translate-x-1/2 -translate-y-1/2" style={{ left: `${left}%`, top: `${top}%` }}>
+            <button type="button" onDragStart={event => event.preventDefault()} onPointerDown={event => { if (id) dragging.start(event, id, game.isOrganizer && !mutation.isPending); }} style={{ touchAction: "pan-y", opacity: dragging.drag?.id === id ? .3 : 1 }} disabled={!game.isOrganizer || mutation.isPending} onClick={event => { if (id) showPlayerMenu(id, event.currentTarget); else place(index); }} aria-haspopup={id ? "menu" : undefined} aria-expanded={Boolean(id && menuId === id)} aria-label={`${sideA ? 'Side A' : 'Side B'} position ${index % perSide + 1}: ${player?.displayName ?? 'Empty'}`} aria-pressed={Boolean(id && selected === id)} className="group flex h-[60px] w-16 cursor-grab select-none flex-col items-center justify-center gap-1 rounded-lg p-0 outline-none disabled:cursor-default">
+              {player ? <>
+                <Avatar userId={player.userId} src={player.avatarUrl} alt={player.displayName} fallback={player.displayName} className={`h-9 w-9 shrink-0 border-2 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-[#0B1F19] ${id && selected === id ? 'border-primary ring-2 ring-primary/50 ring-offset-2 ring-offset-[#0B1F19] shadow-[0_0_12px_#B7F34B40]' : sideA ? 'border-primary/70 shadow-md' : 'border-white/80 shadow-md'}`} />
+                <span title={player.displayName} className="block max-w-full truncate rounded-full border border-white/10 bg-[#0B1F19]/95 px-2 py-0.5 text-[10px] font-semibold leading-3 text-white">{player.displayName}</span>
+              </> : <span className="flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-white/50 bg-[#0B1F19]/30 text-white/80 group-focus-visible:ring-2 group-focus-visible:ring-primary"><Plus aria-hidden="true" className="h-4 w-4" /></span>}
             </button>
-            {player && game.isOrganizer && <Button type="button" size="icon" variant="outline" className="absolute -right-1 -top-2 h-9 w-9 bg-surface" aria-label={`Actions for ${player.displayName}`} disabled={mutation.isPending} onClick={event => showPlayerMenu(player.userId, event.currentTarget)}><MoreHorizontal className="h-4 w-4" /></Button>}
           </div>;
         })}
       </div>
@@ -186,7 +202,7 @@ export function BadmintonLineup({ game, onSaved }: { game: BadmintonGameDetail; 
       {game.isOrganizer && !game.lineupStorageReady && <p role="alert" className="text-sm text-warning">Bench storage is not installed. Run the badminton_lineup_bench SQL migration before saving.</p>}
       {editing && <div className="flex flex-wrap gap-2 border-t border-border pt-4"><Button className="flex-1" disabled={!game.lineupStorageReady} isLoading={mutation.isPending} onClick={() => mutation.mutate()}><Save className="mr-2 h-4 w-4" />Save lineup</Button><Button variant="outline" disabled={mutation.isPending} onClick={() => { setDraft(null); setSelected(null); }}>Cancel</Button></div>}
     </div>
-    {dragging.drag && draggedPlayer && createPortal(<div aria-hidden="true" className="pointer-events-none fixed z-[70] flex w-28 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 rounded-xl border border-primary bg-[#142D25]/95 p-2 shadow-2xl" style={{ left: dragging.drag.x, top: dragging.drag.y }}><Avatar userId={draggedPlayer.userId} src={draggedPlayer.avatarUrl} fallback={draggedPlayer.displayName} /><span className="max-w-full truncate text-xs font-bold">{draggedPlayer.displayName}</span><span className={validDragTarget ? 'text-xs text-primary' : 'text-xs text-red-300'}>{validDragTarget ? dragTarget === 'bench' ? 'Bench' : 'Team ' + dragTarget : 'Invalid drop'}</span></div>, document.body)}
+    {dragging.drag && draggedPlayer && createPortal(<div aria-hidden="true" className="pointer-events-none fixed z-[70] flex w-16 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1" style={{ left: dragging.drag.x, top: dragging.drag.y }}><Avatar userId={draggedPlayer.userId} src={draggedPlayer.avatarUrl} fallback={draggedPlayer.displayName} className="h-9 w-9 border-2 border-primary shadow-lg" /><span className="max-w-full truncate rounded-full bg-[#0B1F19]/95 px-2 py-0.5 text-[10px] font-bold">{draggedPlayer.displayName}</span><span className={validDragTarget ? 'text-xs text-primary' : 'text-xs text-red-300'}>{validDragTarget ? dragTarget === 'bench' ? 'Bench' : 'Team ' + dragTarget : 'Invalid drop'}</span></div>, document.body)}
     {game.isOrganizer && menuPlayer && <BadmintonPlayerMenu avatarUrl={menuPlayer.avatarUrl} anchor={menuAnchor} name={menuPlayer.displayName} current={assignment(menuPlayer.userId)} maybe={menuPlayer.status === 'maybe'} disabled={mutation.isPending} canMove={target => Boolean(target === 'remove' ? moveLineupPlayer(state, menuPlayer, target, perSide) : dropLineupPlayer(state, menuPlayer, target, perSide))} onMove={target => move(menuPlayer.userId, target)} onClose={() => setMenuId(null)} />}
   </Card>;
 }
