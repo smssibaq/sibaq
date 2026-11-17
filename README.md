@@ -1,4 +1,37 @@
-# ApexBuild — Domain-Neutral Buildathon Starter
+# Kalikkanundo
+
+Turf football squad, match and lineup manager. `apps/landing` is the Next.js marketing site, `apps/web` is the React/Vite PWA, and `supabase/` holds the database migrations.
+
+## Getting started
+
+Requirements: Node 22+ (see `.nvmrc`) and npm.
+
+```bash
+# 1. Install everything and create apps/*/.env.local from the examples
+powershell ./scripts/setup.ps1      # Windows
+./scripts/setup.sh                  # macOS / Linux / Git Bash
+# (or: npm run setup, then copy apps/*/.env.example to apps/*/.env.local)
+
+# 2. Run landing (http://localhost:3000) and web app (http://localhost:5173)
+npm run dev
+```
+
+### Supabase
+
+The apps point at Supabase project `ctbpkaqyddceacjlujpi` (`https://ctbpkaqyddceacjlujpi.supabase.co`, region ap-southeast-2). All 13 migrations in `supabase/migrations/` are applied there and the remote migration history matches the file versions, so `supabase db push` only sends new files.
+
+To use a different project, change `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `apps/web/.env.local` and run:
+
+```bash
+supabase link --project-ref <ref>
+supabase db push
+```
+
+In the Supabase dashboard, under **Authentication → URL Configuration**, set the Site URL to `http://localhost:5173` and add `http://localhost:5173/auth/callback` (plus your production URLs) to the redirect allow-list. Google sign-in also needs the Google provider enabled.
+
+---
+
+## Original starter notes: ApexBuild — Domain-Neutral Buildathon Starter
 
 A production-grade, reusable Buildathon template optimized for a **3-person team** and a **240-minute competition window**.
 

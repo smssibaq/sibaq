@@ -5,7 +5,7 @@
 | Checkpoint | Scope | Status | Notes |
 |---|---|---|---|
 | **C0: Environment & Architecture** | Monorepo isolation & scripts | **PASS** | `apps/landing` (Next.js 15) and `apps/web` (React/Vite). Independent lockfiles and node_modules. Root `npm run dev` and `npm run install:all` configured. |
-| **C1: Database & RPC Inspection** | Live Supabase probe | **PASS** | Probed project `czhkpkhtpdafiiadvgje` (ap-south-1). Verified all 9 public tables, exact schema columns, and 14 `SECURITY DEFINER` RPCs. Documented in `20261116000004_turf_xi_core_schema.sql`. |
+| **C1: Database & RPC Inspection** | Live Supabase probe | **PASS** | Schema rebuilt from migrations on project `ctbpkaqyddceacjlujpi` (ap-southeast-2): 12 public tables and all RPCs the web client calls. Smoke-tested create squad → join → approve → role change → ownership transfer, and outsider rejection. |
 | **C2: Theme & Tokens** | 60/30/10 Palette & Typography | **PASS** | `#0B1F19` deep pitch canvas (60%), `#132E26` stadium surface (30%), `#B7F34B` electric neon lime (10%). High-contrast accessible text on accent (`#0B1F19`). Poppins typography. |
 | **C3: Type System & Contracts** | Database & Domain Contracts | **PASS** | Complete typed Supabase client with PKCE. App-level domain interfaces in `src/types/contracts.ts` and `src/types/database.types.ts`. Centralized query keys. |
 | **C4: Landing & Routing** | Next.js Landing & TanStack Router | **PASS** | Turf XI branded hero, CSS football pitch board preview, and dynamic CTA to web app. Router placeholders for all squad, match, invite, and lineup routes. |
@@ -15,10 +15,16 @@
 ---
 
 ## Live Supabase Credentials Configured
-- **Project Reference:** `czhkpkhtpdafiiadvgje`
-- **Region:** `ap-south-1`
-- **API URL:** `https://czhkpkhtpdafiiadvgje.supabase.co`
-- **Publishable Key:** `sb_publishable_fVvf3BGpEVonkiEBm5BDvw_pv2_iFhz` (safely exposed in frontend)
+- **Project Reference:** `ctbpkaqyddceacjlujpi` (migrated 2026-11-17; previously `czhkpkhtpdafiiadvgje`)
+- **Region:** `ap-southeast-2`
+- **API URL:** `https://ctbpkaqyddceacjlujpi.supabase.co`
+- **Publishable Key:** `sb_publishable_y6T_800vf2xdiMeUTRqSaQ_zn5eySE_` (safe to expose in the frontend)
+- **Migrations:** all 13 files in `supabase/migrations/` applied; remote history versions match the filenames.
+
+### Migration notes (2026-11-17)
+- Duplicate `20261116000008` version renumbered (000009–000011 shifted by one).
+- `20261117000012` implements the squad/lineup RPCs that were previously only documented, fixes recursive `squad_members` RLS, adds the `avatars` bucket and realtime publication.
+- `20261117000013` closes a NULL-role authorization bypass in the RPCs and removes anon EXECUTE.
 
 ---
 

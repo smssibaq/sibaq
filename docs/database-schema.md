@@ -1,7 +1,7 @@
 # Database Schema & Migrations — Turf XI
 
 ## Overview
-PostgreSQL tables are secured via Row Level Security (RLS) on all exposed schemas in Supabase project `czhkpkhtpdafiiadvgje` (Region: `ap-south-1`). Frontend route guards are for UX only; actual authorization is enforced by PostgreSQL RLS and `SECURITY DEFINER` stored procedures.
+PostgreSQL tables are secured via Row Level Security (RLS) on all exposed schemas in Supabase project `ctbpkaqyddceacjlujpi` (Region: `ap-southeast-2`). Frontend route guards are for UX only; actual authorization is enforced by PostgreSQL RLS and `SECURITY DEFINER` stored procedures.
 
 ---
 

@@ -4,10 +4,9 @@ ApexBuild is designed to deploy to **two independent Vercel projects** and a sin
 
 ## 1. Supabase Cloud Configuration
 1. Create a project at [database.new](https://database.new).
-2. Go to **SQL Editor** and run the migrations in sequential order:
-   - `supabase/migrations/20261115000001_initial_profiles_and_roles.sql`
-   - `supabase/migrations/20261115000002_sample_items_demo.sql`
-   - `supabase/migrations/20261115000003_storage_user_files.sql`
+2. Apply every file in `supabase/migrations/` in filename order. The easiest way is the CLI:
+   `supabase link --project-ref <ref>` then `supabase db push`.
+   (The current project, `ctbpkaqyddceacjlujpi`, already has all 13 applied.)
 3. Go to **Authentication -> URL Configuration**:
    - **Site URL**: `https://<your-web-app>.vercel.app` (or `http://localhost:5173` locally)
    - **Redirect URLs**:
