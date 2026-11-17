@@ -12,33 +12,33 @@ import {
 const FEATURE_ITEMS = [
   {
     icon: Shield,
-    title: 'Create Squads',
-    desc: 'Build a permanent football group with your friends and assign squad roles.',
+    title: 'Multi-Sport Squads',
+    desc: 'Build permanent groups for Football, Cricket, Badminton, and Volleyball with dedicated captain permissions.',
   },
   {
     icon: UserPlus,
-    title: 'Invite Players',
-    desc: 'Invite teammates using shareable links and private 16-character room codes.',
+    title: 'WhatsApp Room Codes',
+    desc: 'Invite teammates using instant shareable links and secure private room codes directly in your group chats.',
   },
   {
     icon: Calendar,
-    title: 'Manage Matches',
-    desc: 'Plan friendly games, practice sessions, and upcoming fixtures at your favorite turf.',
+    title: 'Match Scheduling',
+    desc: 'Plan turf friendlies, box cricket matches, indoor court bookings, and upcoming tournament fixtures.',
   },
   {
     icon: LayoutGrid,
-    title: 'Build Formations',
-    desc: 'Create your starting lineup with a visual football pitch supporting 5v5 to 7v7.',
+    title: 'Sport-Specific Lineups',
+    desc: 'From football 5v5/7v7 pitches to cricket batting/fielding orders, badminton pairings, and volleyball rotations.',
   },
   {
     icon: Users,
-    title: 'Track Availability',
-    desc: 'Know who is playing before match day with transparent playing, maybe, and out RSVPs.',
+    title: 'Real-Time RSVPs',
+    desc: 'Know who is playing before match day with transparent playing, maybe, and out attendance tracking.',
   },
   {
     icon: Trophy,
-    title: 'Manage Your Team',
-    desc: 'Assign preferred positions and organize Team A vs Team B effortlessly.',
+    title: 'Balanced Teams & Derbies',
+    desc: 'Assign positions and organize competitive Team A vs Team B matches without chaos or arguments.',
   },
 ];
 
@@ -50,14 +50,14 @@ export function Features() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary mb-3">
             <Sparkles className="h-4 w-4" />
-            <span>Core Capabilities</span>
+            <span>Platform Capabilities</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground uppercase leading-tight">
-            Everything Your Turf Squad Needs.{' '}
+            Everything Your Sports Squad Needs.{' '}
             <span className="text-primary block mt-1">One Platform.</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            No more scattered messages, confusing lineups, or last-minute team management.
+            No more scattered group chats, lost headcounts, or last-minute confusion on game day.
           </p>
         </div>
 

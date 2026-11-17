@@ -21,7 +21,7 @@ export function CtaSection() {
           </h2>
 
           <p className="mt-4 max-w-xl mx-auto text-muted-foreground text-sm sm:text-base leading-relaxed">
-            Bring your squad together, organize your game, and take control of every match.
+            Bring your squad together across Football, Cricket, Badminton, and Volleyball. Organize your match, set your lineup, and take control of game day.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

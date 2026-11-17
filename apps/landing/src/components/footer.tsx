@@ -34,7 +34,7 @@ export function Footer() {
             <BrandLogo href="/" size="md" />
 
             <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-              Create your squad, invite friends, organize turf matches and build your perfect lineup.
+              Create permanent squads, invite teammates via WhatsApp, organize matches, and build tactical lineups across Football, Cricket, Badminton, and Volleyball.
             </p>
 
             {/* Social Icons */}
@@ -70,25 +70,35 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Column 2 — Product (lg:col-span-2) */}
+          {/* Column 2 — Sports & Product (lg:col-span-2) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Product
+              Sports & Product
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Features
+                <a href="#sports" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Football & 7s Turf
+                </a>
+              </li>
+              <li>
+                <a href="#sports" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Cricket Box & Overs
+                </a>
+              </li>
+              <li>
+                <a href="#sports" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Badminton Doubles
+                </a>
+              </li>
+              <li>
+                <a href="#sports" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Volleyball Rotations
                 </a>
               </li>
               <li>
                 <a href="#formations" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Formation Builder
-                </a>
-              </li>
-              <li>
-                <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-                  How It Works
+                  Tactical Formation Builder
                 </a>
               </li>
             </ul>
@@ -113,7 +123,7 @@ export function Footer() {
                   href={`${siteConfig.appUrl}/join`}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Join Squad
+                  Join via Code
                 </a>
               </li>
               <li>
@@ -129,32 +139,41 @@ export function Footer() {
                   href={`${siteConfig.appUrl}/dashboard`}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  My Dashboard
+                  Match Dashboard
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Column 4 — Community & Support (lg:col-span-2) */}
+          {/* Column 4 — Engineering & Tech (lg:col-span-2) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Community
+              Engineering
             </h4>
             <ul className="space-y-2.5 text-xs">
+              <li>
+                <Link
+                  href="/technology"
+                  className="text-primary font-semibold hover:text-primary-hover hover:underline transition-colors flex items-center gap-1"
+                >
+                  <span>Technology & Architecture</span>
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </li>
               <li>
                 <a href="#why-kalikkanundo" className="text-muted-foreground hover:text-foreground transition-colors">
                   Why Kalikkanundo
                 </a>
               </li>
               <li>
-                <a href="#why-kalikkanundo" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Kerala Turf Guide
+                <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Multi-Sport Lifecycle
                 </a>
               </li>
               <li>
-                <a href="#overview" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Squad Rules
-                </a>
+                <Link href="/technology#security" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Security & RLS Model
+                </Link>
               </li>
             </ul>
           </div>
@@ -162,10 +181,10 @@ export function Footer() {
           {/* Column 5 — Ready for Kickoff CTA (lg:col-span-3) */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-sm font-bold text-foreground">
-              Ready for Kickoff?
+              Ready to Play?
             </h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Bring your squad together and take your turf games to the next level.
+              Bring your squad together across every sport and take your games to the next level.
             </p>
             <div className="pt-1">
               <a
@@ -182,9 +201,13 @@ export function Footer() {
         {/* Thin Horizontal Divider & Copyright */}
         <div className="border-t border-[#294237]/80 pt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>© {currentYear} Kalikkanundo. All rights reserved.</p>
-          <p className="text-[11px] font-mono text-muted-foreground/80">
-            Built for Kerala Turf Football Community
-          </p>
+          <div className="flex items-center gap-4 text-[11px] font-mono text-muted-foreground/80">
+            <span>Built for Kerala Multi-Sport Communities</span>
+            <span>•</span>
+            <Link href="/technology" className="text-primary hover:underline">
+              Technology & Architecture
+            </Link>
+          </div>
         </div>
 
         {/* Signature Oversized KALIKKANUNDO Typography */}

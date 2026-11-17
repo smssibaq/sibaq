@@ -9,18 +9,18 @@ const HIGHLIGHTS = [
   },
   {
     icon: Users,
-    title: '5v5, 6v6 & 7v7 Formats',
-    desc: 'From compact city turfs in Kochi and Calicut to expansive 7s grounds in Malappuram and Trivandrum, customize squad sizes effortlessly.',
+    title: 'All Local Formats Supported',
+    desc: 'From 5v5/7v7 turf football to 10-over box cricket, badminton doubles, and 6v6 court volleyball, manage any local format effortlessly.',
   },
   {
     icon: Smartphone,
-    title: 'Mobile-First for Pitch Side',
-    desc: 'Check lineups, change positions, and review attendance right on your phone under turf floodlights without lag.',
+    title: 'Mobile-First for Court & Pitch Side',
+    desc: 'Check lineups, batting cards, rotations, and RSVPs right on your phone under turf floodlights without lag or app-store downloads.',
   },
   {
     icon: Clock,
-    title: 'Late Night Kickoffs',
-    desc: 'Schedule 8:00 PM to midnight slots in IST. Automated RSVPs ensure you always know if you have a quorum before paying turf booking advances.',
+    title: 'Floodlit & Morning Slots',
+    desc: 'Schedule 6:00 AM badminton or 10:00 PM turf football in IST. Automated RSVPs ensure you always have a quorum before paying advance booking fees.',
   },
 ];
 
@@ -38,7 +38,7 @@ export function KeralaTurf() {
             <span className="text-primary block mt-1">We Play.</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            From weekly friendlies to last-minute turf plans, Kalikkanundo keeps your football group ready for kickoff.
+            From late-night turf football to weekend box cricket and morning badminton, Kalikkanundo keeps your sports community ready for game day.
           </p>
         </div>
 

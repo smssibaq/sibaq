@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/navbar';
 import { Hero } from '@/components/hero';
+import { SportShowcase } from '@/components/sport-showcase';
 import { Features } from '@/components/features';
 import { FormationShowcase } from '@/components/formation-showcase';
 import { HowItWorks } from '@/components/how-it-works';
@@ -14,6 +15,7 @@ export default function HomePage() {
       <Navbar />
       <main className="flex-1">
         <Hero />
+        <SportShowcase />
         <Features />
         <FormationShowcase />
         <HowItWorks />

@@ -68,17 +68,17 @@ export function FormationShowcase() {
           <div className="lg:col-span-5 space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-primary">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>Interactive Tactical Pitch</span>
+              <span>Football Tactical Pitch Builder</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground uppercase leading-tight">
-              Build Your XI.{' '}
+              Build Your Lineup.{' '}
               <span className="text-primary block mt-1">Your Way.</span>
             </h2>
 
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Arrange your players, experiment with formations, and prepare your squad for every match.
-              Drag players freely across the turf or choose from tactical 5v5, 6v6, and 7v7 presets.
+              Arrange your players, experiment with formations, and prepare your squad for turf night.
+              Drag players freely across the pitch or choose from tactical 5v5, 6v6, and 7v7 presets with strict single-goalkeeper validation.
             </p>
 
             {/* Formation Preset Selector Buttons */}

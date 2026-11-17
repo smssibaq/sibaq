@@ -29,7 +29,7 @@ export function MatchShowcase() {
             </h2>
 
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              No more scrolling through hundreds of chat messages to count heads. Kalikkanundo gives your squad real-time attendance tracking, automatic quorum checks, and clean Team A vs Team B friendly splits.
+              No more scrolling through hundreds of chat messages to count heads. Kalikkanundo gives your squad real-time attendance tracking, automatic quorum checks, and clean Team A vs Team B splits across football turfs, cricket grounds, and courts.
             </p>
 
             <div className="space-y-4 pt-2">
@@ -40,7 +40,7 @@ export function MatchShowcase() {
                 <div>
                   <h4 className="text-sm font-bold text-foreground">Transparent RSVP Deadlines</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Lock attendance ahead of kickoff so you always know if you have enough for 5v5 or 7v7.
+                    Lock attendance ahead of game time so you always know if you have enough players to meet court quorum.
                   </p>
                 </div>
               </div>
@@ -50,9 +50,9 @@ export function MatchShowcase() {
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Team A vs Team B Derby Mode</h4>
+                  <h4 className="text-sm font-bold text-foreground">Sport-Aware Team Splits</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Split confirmed players evenly by preferred positions for competitive, balanced friendlies.
+                    Split confirmed players evenly into balanced teams (football positions, cricket batsmen/bowlers, badminton pairs).
                   </p>
                 </div>
               </div>
@@ -62,9 +62,9 @@ export function MatchShowcase() {
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Turf Location & IST Kickoff</h4>
+                  <h4 className="text-sm font-bold text-foreground">Exact Venue & IST Timing</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Pin exact turf venues with Indian Standard Time schedules so nobody arrives late.
+                    Pin exact turf venues, box arenas, and academies with Indian Standard Time schedules so nobody arrives late.
                   </p>
                 </div>
               </div>

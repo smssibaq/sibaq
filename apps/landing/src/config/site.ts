@@ -17,20 +17,21 @@ export interface SiteConfig {
 
 export const siteConfig: SiteConfig = {
   name: 'Kalikkanundo',
-  tagline: 'Your Game. Your Squad.',
+  tagline: 'Your Game. Your Squad. Every Sport.',
   description:
-    'The football squad and match management platform built for Kerala turf players. Create permanent squads, organize matches, assign pitch positions, and build tactical lineups.',
+    'The multi-sport squad and match management platform built for Kerala players. Create permanent squads, organize matches, manage lineups, and track attendance across Football, Cricket, Badminton, and Volleyball.',
   appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173',
   navLinks: [
+    { label: 'Sports', href: '#sports' },
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Formation Builder', href: '#formations' },
+    { label: 'Tactics & Lineups', href: '#formations' },
     { label: 'Why Kalikkanundo', href: '#why-kalikkanundo' },
   ],
   features: [
     {
       title: 'Create Squads',
-      description: 'Build a permanent football group with your friends, assign roles, and keep the roster ready.',
+      description: 'Build permanent sports groups for football, cricket, badminton, and volleyball with your friends.',
       icon: 'Shield',
     },
     {
@@ -40,32 +41,34 @@ export const siteConfig: SiteConfig = {
     },
     {
       title: 'Manage Matches',
-      description: 'Plan friendly games, practice sessions, and upcoming fixtures at your favorite turf venues.',
+      description: 'Schedule fixtures, turf sessions, net practices, and court games at your favorite local venues.',
       icon: 'Calendar',
     },
     {
-      title: 'Build Formations',
-      description: 'Create your starting lineup with a visual, responsive football pitch supporting 5v5 to 7v7.',
+      title: 'Sport-Specific Lineups',
+      description: 'From football 5v5/7v7 pitch formations to cricket batting orders and fielding positions.',
       icon: 'LayoutGrid',
     },
     {
       title: 'Track Availability',
-      description: 'Know who is playing before match day with transparent playing, maybe, and out attendance.',
+      description: 'Know who is playing before match day with transparent playing, maybe, and out RSVPs.',
       icon: 'Users',
     },
     {
-      title: 'Manage Your Team',
-      description: 'Assign positions and organize Team A vs Team B effortlessly without confusion.',
+      title: 'Balanced Teams & Derbies',
+      description: 'Assign positions, split into Team A vs Team B, and organize competitive games without confusion.',
       icon: 'Trophy',
     },
   ],
   footer: {
-    copyright: `© ${new Date().getFullYear()} Kalikkanundo. Built for the Kerala turf football community.`,
+    copyright: `© ${new Date().getFullYear()} Kalikkanundo. Built for Kerala sports communities.`,
     links: [
+      { label: 'Sports', href: '#sports' },
       { label: 'Features', href: '#features' },
       { label: 'How It Works', href: '#how-it-works' },
-      { label: 'Formations', href: '#formations' },
+      { label: 'Lineups & Formations', href: '#formations' },
       { label: 'Why Kalikkanundo', href: '#why-kalikkanundo' },
+      { label: 'Technology & Architecture', href: '/technology' },
     ],
   },
 };

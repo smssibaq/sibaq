@@ -7,19 +7,19 @@ const STEPS = [
     step: '01',
     icon: Shield,
     title: 'Create Your Squad',
-    desc: 'Set up a permanent group for your turf friends. Choose your moniker, establish captain permissions, and generate your room code.',
+    desc: 'Set up a permanent sports group for your friends. Pick your sport, establish captain permissions, and generate your 16-character room code.',
   },
   {
     icon: UserCheck,
     step: '02',
     title: 'Invite & Organize',
-    desc: 'Share your join code directly on WhatsApp. Teammates join in seconds, choose their preferred pitch positions, and confirm match availability.',
+    desc: 'Share your join code directly on WhatsApp. Teammates join in seconds, choose their preferred sport positions or roles, and confirm match availability.',
   },
   {
     icon: Trophy,
     step: '03',
-    title: 'Build Your Team',
-    desc: 'Choose your starters, test tactical 5v5/7v7 formations on the pitch board, and take the field ready to own the turf.',
+    title: 'Build Your Team & Play',
+    desc: 'Pick your starters, test tactical formations or batting orders on the board, and step onto the turf or court ready to win.',
   },
 ];
 
