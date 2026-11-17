@@ -14,6 +14,7 @@ import { useAuth } from '@/modules/auth/auth-provider';
 import { normalizeError } from '@/lib/errors';
 import { formatDateTime } from '@/lib/dates';
 import type { BadmintonRsvpStatus, BadmintonSide } from '@/types/sports/badminton.db';
+import { RatingsPanel } from '@/modules/ratings';
 import { badmintonApi, badmintonKeys, type BadmintonGameDetail } from './api';
 
 const RSVP_OPTIONS: { value: BadmintonRsvpStatus; label: string; icon: typeof Check }[] = [
@@ -151,7 +152,7 @@ export function BadmintonGamePage({ gameId }: { gameId: string }) {
       <PairsCard game={game} onSaved={invalidate} />
       <ResultCard game={game} onSaved={invalidate} />
 
-      {/* ratings:slot */}
+      <RatingsPanel gameId={game.id} />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, calculateCountdown } from '@/lib/dates';
 import type { Match } from '@/types/contracts';
+import { UpcomingGames } from './upcoming-games';
 import {
   Shield,
   Trophy,
@@ -236,6 +237,9 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming games across every sport */}
+      <UpcomingGames />
 
       {/* Error state if data fetching fails */}
       {(isSquadsError || isMatchesError) && (

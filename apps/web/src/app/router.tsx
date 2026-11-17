@@ -31,6 +31,9 @@ import { SquadHubPage } from '../modules/squad-hub';
 import { OfflineIndicator } from '../components/pwa/offline-indicator';
 import { PwaUpdatePrompt } from '../components/pwa/pwa-update-prompt';
 import { PwaInstallPrompt } from '../components/pwa/pwa-install-prompt';
+import type { ComponentType } from 'react';
+import { useParams, type AnyRoute } from '@tanstack/react-router';
+import { sportModules, type LoadedSportModule } from './sport-modules';
 
 function RootComponent() {
   return (
@@ -232,7 +235,59 @@ const adminRoute = createRoute({
   ),
 });
 
-// 6. Assemble Route Tree
+// 6. Sport modules (badminton, cricket, volleyball...) mounted from modules/*/index.ts
+function SportGameRoute({ mod }: { mod: LoadedSportModule }) {
+  const { gameId } = useParams({ strict: false }) as { gameId?: string };
+  const GamePage = mod.GamePage;
+  return (
+    <ProtectedRoute>
+      <GamePage gameId={gameId ?? ''} />
+    </ProtectedRoute>
+  );
+}
+
+function protectedPage(Page: ComponentType) {
+  return function ProtectedSportPage() {
+    return (
+      <ProtectedRoute>
+        <Page />
+      </ProtectedRoute>
+    );
+  };
+}
+
+const sportRoutes = sportModules.flatMap((mod) => {
+  const base = mod.basePath;
+  const gamePaths = new Set<string>([`${base}/$gameId`]);
+  if (mod.routes?.game) gamePaths.add(mod.routes.game);
+  const routes: AnyRoute[] = [
+    createRoute({ getParentRoute: () => rootRoute, path: base, component: protectedPage(mod.HubPage) }),
+    ...[...gamePaths].map((path) =>
+      createRoute({ getParentRoute: () => rootRoute, path, component: () => <SportGameRoute mod={mod} /> })
+    ),
+  ];
+  if (mod.CreatePage) {
+    routes.push(
+      createRoute({
+        getParentRoute: () => rootRoute,
+        path: mod.routes?.create ?? `${base}/create`,
+        component: protectedPage(mod.CreatePage),
+      })
+    );
+  }
+  if (mod.JoinPage) {
+    routes.push(
+      createRoute({
+        getParentRoute: () => rootRoute,
+        path: mod.routes?.join ?? `${base}/join`,
+        component: protectedPage(mod.JoinPage),
+      })
+    );
+  }
+  return routes;
+});
+
+// 7. Assemble Route Tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -253,6 +308,7 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   profileSetupRoute,
   adminRoute,
+  ...sportRoutes,
 ]);
 
 export const router = createRouter({

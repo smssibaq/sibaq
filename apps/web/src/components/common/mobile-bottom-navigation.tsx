@@ -16,6 +16,7 @@ import { squadApi } from '@/modules/squads/api';
 import { matchApi } from '@/modules/matches/api';
 import { queryKeys } from '@/infrastructure/query-keys';
 import { BrandLogo } from './brand-logo';
+import { activeSportForPath } from './sport-switcher';
 
 export function MobileBottomNavigation() {
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
@@ -31,7 +32,8 @@ export function MobileBottomNavigation() {
   const isMatchesActive =
     pathname === '/matches' ||
     pathname.startsWith('/matches/') ||
-    pathname.includes('/matches/');
+    pathname.includes('/matches/') ||
+    activeSportForPath(pathname) !== null;
   const isProfileActive = pathname.startsWith('/profile');
 
   // Query user squads for dynamic match creation shortcut
@@ -200,7 +202,7 @@ export function MobileBottomNavigation() {
                 isMatchesActive ? 'font-bold text-foreground' : 'font-medium'
               }`}
             >
-              Matches
+              Games
             </span>
           </button>
 

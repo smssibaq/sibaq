@@ -601,6 +601,30 @@ type CoreFunctions = {
     Args: { p_game: string; p_user: string };
     Returns: boolean;
   };
+  // Shared ratings (supabase/migrations/20261117150833_ratings_core.sql)
+  rate_player: {
+    Args: { p_game: string; p_player: string; p_rating: number };
+    Returns: void;
+  };
+  review_match: {
+    Args: { p_game: string; p_rating: number; p_feedback?: string | null };
+    Returns: void;
+  };
+  get_game_ratings_summary: {
+    Args: { p_game: string };
+    Returns: Json;
+  };
+  get_my_rating_history: {
+    Args: Record<string, never>;
+    Returns: Array<{
+      game_id: string;
+      sport: SportKey;
+      title: string;
+      starts_at: string;
+      avg_rating: number;
+      rating_count: number;
+    }>;
+  };
 };
 
 

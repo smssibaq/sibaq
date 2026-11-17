@@ -21,6 +21,7 @@ import { Avatar } from '../ui/avatar';
 import { BrandLogo } from './brand-logo';
 import { Breadcrumbs } from './breadcrumb';
 import { MobileBottomNavigation } from './mobile-bottom-navigation';
+import { SportSwitcher, activeSportForPath } from './sport-switcher';
 import { squadApi } from '@/modules/squads/api';
 import { matchApi } from '@/modules/matches/api';
 import { queryKeys } from '@/infrastructure/query-keys';
@@ -538,7 +539,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Page Content Body with bottom clearance for floating mobile navigation */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-24 sm:pb-32 lg:pb-8">
-          <div className="mx-auto max-w-container">{children}</div>
+          <div className="mx-auto max-w-container">
+            {(currentPath === '/dashboard' || (activeSportForPath(currentPath) && currentPath.split('/').length <= 2)) && (
+              <SportSwitcher className="mb-4" />
+            )}
+            {children}
+          </div>
         </main>
 
         {/* Floating Mobile Bottom Navigation */}
