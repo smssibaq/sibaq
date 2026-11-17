@@ -13,6 +13,7 @@ import { squadApi } from '../squads/api';
 import { queryKeys } from '@/infrastructure/query-keys';
 import { formatDate, calculateCountdown } from '@/lib/dates';
 import type { Match } from '@/types/contracts';
+import { useUIStore } from '@/stores/ui-store';
 import {
   CalendarDays,
   Clock,
@@ -28,6 +29,7 @@ import {
 
 export function MatchesHubPage() {
   const navigate = useNavigate();
+  const openSportDrawer = useUIStore((s) => s.openSportDrawer);
   const [selectedSquadId, setSelectedSquadId] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'upcoming' | 'live' | 'past'>('upcoming');
 
@@ -105,15 +107,7 @@ export function MatchesHubPage() {
     : '';
 
   const handleScheduleMatch = () => {
-    if (squads.length > 0) {
-      const targetSquadId = selectedSquadId !== 'all' ? selectedSquadId : squads[0].id;
-      navigate({
-        to: '/squads/$squadId/matches/new',
-        params: { squadId: targetSquadId },
-      });
-    } else {
-      navigate({ to: '/squads/new' });
-    }
+    openSportDrawer();
   };
 
   if (isLoading) {

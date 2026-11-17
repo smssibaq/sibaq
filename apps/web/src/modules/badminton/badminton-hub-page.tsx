@@ -1,6 +1,6 @@
 import { GameLocationPicker } from '@/components/location/game-location-picker';
 import { manualLocation } from '@/components/location/location-service';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Plus, X, CalendarDays } from 'lucide-react';
@@ -29,8 +29,21 @@ export function BadmintonHubPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [location,setLocation] = useState(manualLocation());
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('create') === 'true';
+    }
+    return false;
+  });
   const [activeTab, setActiveTab] = useState<'upcoming' | 'live' | 'past'>('upcoming');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (new URLSearchParams(window.location.search).get('create') === 'true') {
+        setShowForm(true);
+      }
+    }
+  }, []);
 
   const [form, setForm] = useState({
     squadId: '',
