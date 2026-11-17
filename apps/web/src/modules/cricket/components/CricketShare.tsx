@@ -77,3 +77,4 @@ export function CricketShare({ title, code }: { title: string; code: string }) {
     </Card>
   );
 }
+

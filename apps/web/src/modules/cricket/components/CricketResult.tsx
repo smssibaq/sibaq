@@ -241,3 +241,4 @@ export function CricketResult({ game }: { game: CricketGameDetail }) {
     </Card>
   );
 }
+

@@ -1,5 +1,7 @@
 import React from 'react';
 import { useAuth } from './auth-provider';
+import { ErrorState } from '@/components/common/error-state';
+import { profileErrorMessage } from '@/modules/profile/api';
 import { AppLayout } from '../../components/common/app-layout';
 import { Skeleton } from '../../components/ui/skeleton';
 
@@ -14,7 +16,7 @@ export function ProtectedRoute({
   requireProfile = true,
   noLayout = false,
 }: ProtectedRouteProps) {
-  const { user, profile, isLoading } = useAuth();
+  const { user, needsOnboarding, isLoading, profileError, refreshProfile } = useAuth();
 
   if (isLoading) {
     return (
@@ -37,14 +39,16 @@ export function ProtectedRoute({
   if (!user) {
     const currentPath =
       typeof window !== 'undefined'
-        ? window.location.pathname + window.location.search
+        ? window.location.pathname + window.location.search + window.location.hash
         : '/dashboard';
     window.location.href = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
     return null;
   }
 
-  // Redirect un-onboarded players who do not have preferred_position set yet
-  if (requireProfile && profile && !profile.preferred_position) {
+  if (profileError) return <ErrorState title="Unable to load your profile" message={profileErrorMessage(profileError)} onRetry={() => { void refreshProfile().catch(() => {}); }} />;
+
+  // Completion is sport-independent; football positions are optional.
+  if (requireProfile && needsOnboarding) {
     const currentPath =
       typeof window !== 'undefined'
         ? window.location.pathname
@@ -52,9 +56,9 @@ export function ProtectedRoute({
     if (currentPath !== '/profile/setup') {
       const fullUrl =
         typeof window !== 'undefined'
-          ? window.location.pathname + window.location.search
+          ? window.location.pathname + window.location.search + window.location.hash
           : '/dashboard';
-      window.location.href = `/profile/setup?returnUrl=${encodeURIComponent(fullUrl)}`;
+      window.location.href = `/profile/setup?redirect=${encodeURIComponent(fullUrl)}`;
       return null;
     }
   }

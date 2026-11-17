@@ -144,3 +144,4 @@ export function CricketToss({ game }: { game: CricketGameDetail }) {
     </Card>
   );
 }
+

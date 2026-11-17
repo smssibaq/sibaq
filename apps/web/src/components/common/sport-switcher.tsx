@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { supabase } from '@/infrastructure/supabase/client';
 import { getSportModule, sportHubPath } from '@/app/sport-modules';
 import type { Database } from '@/types/database.types';
+import { useAuth } from '@/modules/auth/auth-provider';
 
 export type SportRow = Database['public']['Tables']['sports']['Row'];
 
@@ -12,7 +13,9 @@ export const sportsQueryKey = ['sports', 'all'] as const;
 
 /** All registered sports (enabled first by sort order). */
 export function useSports() {
-  return useQuery({
+  const { profile } = useAuth();
+  const primary = profile?.sports.find(sport => sport.is_primary)?.sport;
+  const query = useQuery({
     queryKey: sportsQueryKey,
     queryFn: async (): Promise<SportRow[]> => {
       const { data, error } = await supabase.from('sports').select('*').order('sort_order');
@@ -21,6 +24,7 @@ export function useSports() {
     },
     staleTime: 5 * 60 * 1000,
   });
+  return { ...query, data: query.data ? [...query.data].sort((a, b) => Number(b.key === primary) - Number(a.key === primary)) : undefined };
 }
 
 /** A sport is playable when it is enabled in the DB and the app has routes for it. */

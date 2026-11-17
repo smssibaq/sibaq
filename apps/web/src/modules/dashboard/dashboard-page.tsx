@@ -126,10 +126,10 @@ export function DashboardPage() {
               <span>Kalikkanundo Match Hub</span>
             </div>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground truncate">
-              Welcome back, <span className="text-primary">{profile?.display_name || user?.email?.split('@')[0] || 'Player'}</span>
+              Hi <span className="text-primary">{profile?.display_name || user?.email?.split('@')[0] || 'Player'}</span> {profile?.sports.find(sport => sport.is_primary)?.emoji}
             </h2>
             <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
-              Manage your turf squads, check upcoming Kerala night matches, build 5v5/7v7 lineups, and coordinate player attendance in real time.
+              Find your next game, organize your squad, and keep up with the sports you play.
             </p>
           </div>
 
